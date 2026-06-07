@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Kelompok</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #2d5a27;
+    --green-mid: #4a7c59;
+    --green-light: #6aaa78;
+    --green-pale: #e8f3e9;
+    --green-bg: #5a8c5a;
+    --cream: #f5f2ea;
+    --cream-dark: #ede8dd;
+    --sand: #d6cfbf;
+    --text-dark: #1a2e1a;
+    --text-mid: #3d5c3d;
+    --text-light: #6b8f6b;
+    --white: #ffffff;
+    --shadow: 0 2px 12px rgba(30,60,30,0.10);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--green-bg);
+    min-height: 100vh;
+    color: var(--text-dark);
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--green-dark);
+    color: var(--white);
+    padding: 0 28px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header .hamburger { font-size: 22px; cursor: pointer; opacity: 0.85; }
+  .header h1 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400; letter-spacing: 0.02em; }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .user-chip {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.12); border-radius: 20px;
+    padding: 4px 12px 4px 4px; cursor: default;
+  }
+  .user-avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--green-light); color: white;
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .user-name { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 500; }
+  .header-link {
+    color: rgba(255,255,255,0.75); font-size: 13px; font-weight: 500;
+    text-decoration: none; padding: 5px 10px; border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .header-link:hover { background: rgba(255,255,255,0.1); color: white; }
+  .btn-logout {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 600;
+    padding: 5px 12px; border-radius: 8px; text-decoration: none;
+    transition: background 0.2s; white-space: nowrap;
+  }
+  .btn-logout:hover { background: rgba(255,255,255,0.2); color: white; }
+
+  /* MAIN LAYOUT */
+  .main {
+    display: grid;
+    grid-template-columns: 240px 1fr 290px;
+    gap: 20px;
+    padding: 20px 22px;
+    max-width: 1280px;
+    margin: 0 auto;
+    min-height: calc(100vh - 52px);
+    align-items: start;
+  }
+
+  /* CARD BASE */
+  .card {
+    background: var(--cream);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  /* ===== LEFT: TASKS ===== */
+  .tasks-card { padding: 20px 18px; }
+  .tasks-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text-dark); margin-bottom: 6px; }
+  .today-badge {
+    background: var(--cream-dark);
+    color: var(--text-mid);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+    margin-bottom: 14px;
+  }
+  .progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .progress-label { font-size: 12px; color: var(--text-light); font-weight: 500; }
+  .progress-count { font-size: 12px; color: var(--text-mid); font-weight: 600; }
+  .progress-bar-wrap { background: var(--sand); border-radius: 10px; height: 7px; margin-bottom: 14px; }
+  .progress-bar { background: var(--green-mid); border-radius: 10px; height: 100%; transition: width 0.4s; }
+
+  /* All-done celebration banner */
+  .all-done-banner {
+    display: none; background: var(--green-pale);
+    border: 1.5px solid var(--green-light); border-radius: var(--radius-sm);
+    padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--green-dark);
+    align-items: center; gap: 8px; margin-bottom: 10px;
+  }
+  .all-done-banner.visible { display: flex; }
+  .all-done-icon {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--green-mid);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .no-task-msg { font-size: 12px; color: var(--text-light); font-style: italic; text-align: center; padding: 10px 0; }
+  .task-list { list-style: none; margin-bottom: 14px; }
+  .task-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px; border-radius: var(--radius-sm);
+    font-size: 13px; margin-bottom: 3px;
+    transition: background 0.15s;
+  }
+  .task-item:hover { background: var(--cream-dark); }
+  .task-item.done-item { background: var(--green-pale); }
+  .task-check {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--green-mid);
+    cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  }
+  .task-check:hover { border-color: var(--green-dark); transform: scale(1.12); }
+  .task-check.done { background: var(--green-mid); border-color: var(--green-mid); }
+  .task-check.done::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; }
+  .task-label { flex: 1; }
+  .task-label.done { text-decoration: line-through; color: var(--text-light); }
+  .task-type-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .task-del { background: none; border: none; cursor: pointer; color: var(--text-light); font-size: 14px; padding: 0 2px; opacity: 0; transition: opacity 0.15s; }
+  .task-item:hover .task-del { opacity: 1; }
+  .task-del:hover { color: #c0392b; }
+
+  .divider { border: none; border-top: 1px solid var(--sand); margin: 14px 0; }
+
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px; }
+  .type-list { list-style: none; margin-bottom: 10px; }
+  .type-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-mid);
+    padding: 4px 0;
+  }
+  .type-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .type-del { background: none; border: none; cursor: pointer; color: var(--text-light); font-size: 13px; margin-left: auto; }
+  .type-del:hover { color: #c0392b; }
+
+  .input-row { display: flex; gap: 6px; margin-bottom: 8px; }
+  .input-text {
+    flex: 1; padding: 7px 10px; border: 1.5px solid var(--sand);
+    border-radius: var(--radius-sm); font-family: inherit; font-size: 13px;
+    background: var(--white); color: var(--text-dark);
+    outline: none; transition: border-color 0.2s;
+  }
+  .input-text:focus { border-color: var(--green-mid); }
+  .color-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .color-label { font-size: 12px; color: var(--text-light); }
+  .color-swatch {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid transparent; cursor: pointer; transition: transform 0.15s;
+  }
+  .color-swatch.active, .color-swatch:hover { transform: scale(1.25); border-color: var(--text-dark); }
+  .btn {
+    display: block; width: 100%; padding: 9px;
+    background: var(--green-dark); color: var(--white);
+    border: none; border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn:hover { background: var(--green-mid); }
+  .btn-outline {
+    background: transparent; border: 1.5px solid var(--green-dark);
+    color: var(--green-dark);
+  }
+  .btn-outline:hover { background: var(--green-pale); }
+
+  /* ===== MIDDLE: CALENDAR ===== */
+  .calendar-wrap { display: flex; flex-direction: column; gap: 16px; }
+  .cal-card { padding: 18px; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .cal-title { font-family: 'DM Serif Display', serif; font-size: 18px; }
+  .cal-nav {
+    background: var(--cream-dark); border: none; border-radius: 8px;
+    width: 30px; height: 30px; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dark); transition: background 0.2s;
+  }
+  .cal-nav:hover { background: var(--sand); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-day-header {
+    text-align: center; font-size: 11px; font-weight: 700;
+    color: var(--text-light); padding: 6px 0; letter-spacing: 0.04em;
+  }
+  .cal-day {
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: background 0.15s; position: relative;
+    color: var(--text-dark); gap: 1px; padding-bottom: 2px;
+  }
+  .cal-day:hover { background: var(--green-pale); }
+  .cal-day.other-month { color: var(--sand); cursor: default; }
+  .cal-day.other-month:hover { background: none; }
+  .cal-day.today { background: #d4a017; color: white; font-weight: 700; }
+  .cal-day.today:hover { background: #b8890f; }
+  .cal-day.selected { background: var(--green-dark); color: white; }
+  .cal-day.selected:hover { background: var(--green-mid); }
+  /* Multi-dots for calendar */
+  .cal-dots {
+    display: flex; gap: 2px; align-items: center; justify-content: center;
+    flex-wrap: wrap; max-width: 34px; min-height: 6px;
+  }
+  .cal-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .cal-day.today .cal-dot,
+  .cal-day.selected .cal-dot { background: rgba(255,255,255,0.9) !important; }
+  /* Recurring dot — hollow ring */
+  .cal-dot-rec {
+    background: transparent !important;
+    border: 1.5px solid;
+    width: 5px; height: 5px;
+  }
+  .cal-day.today .cal-dot-rec,
+  .cal-day.selected .cal-dot-rec {
+    border-color: rgba(255,255,255,0.9) !important;
+  }
+  /* Expense border indicator on calendar day */
+  .cal-day.has-expense {
+    outline: 2px solid #d4a017;
+    outline-offset: -2px;
+    border-radius: var(--radius-sm);
+  }
+  .cal-day.has-expense.today    { outline-color: rgba(255,255,255,0.7); }
+  .cal-day.has-expense.selected { outline-color: rgba(255,255,255,0.6); }
+
+  /* SELECTED DATE PANEL */
+  .date-panel { padding: 18px; }
+  .date-panel-title { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 4px; }
+  .date-panel-subtitle { font-size: 12px; color: var(--text-light); margin-bottom: 14px; }
+  .add-task-row { display: flex; gap: 8px; align-items: center; }
+  /* Panel task items */
+  .panel-task-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 8px; border-radius: var(--radius-sm);
+    font-size: 13px; margin-bottom: 3px;
+    background: var(--cream-dark); transition: background 0.15s;
+  }
+  .panel-task-item.done-item { background: var(--green-pale); }
+  .panel-task-item:hover .task-del { opacity: 1; }
+  .task-type-select {
+    flex: 1; padding: 8px 10px; border: 1.5px solid var(--sand);
+    border-radius: var(--radius-sm); font-family: inherit; font-size: 13px;
+    background: var(--white); color: var(--text-dark); outline: none;
+  }
+  .task-type-select:focus { border-color: var(--green-mid); }
+  .btn-add {
+    background: var(--green-dark); color: white; border: none;
+    border-radius: var(--radius-sm); padding: 8px 16px;
+    font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    white-space: nowrap; transition: background 0.2s;
+  }
+  .btn-add:hover { background: var(--green-mid); }
+
+  /* ===== RIGHT: KEUANGAN ===== */
+  .finance-card { padding: 18px; }
+  .finance-title { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 14px; text-align: center; }
+
+  /* DONUT */
+  .donut-wrap { display: flex; justify-content: center; margin-bottom: 8px; }
+  .donut-svg { width: 100px; height: 100px; }
+  .donut-track { fill: none; stroke: var(--sand); stroke-width: 12; }
+  .donut-fill { fill: none; stroke: var(--green-mid); stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+  .donut-text { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700; fill: var(--text-dark); }
+  .donut-sub { font-size: 10px; color: var(--text-light); text-align: center; margin-bottom: 14px; }
+
+  .finance-stats { display: grid; gap: 8px; margin-bottom: 14px; }
+  .stat-box {
+    background: var(--cream-dark); border-radius: var(--radius-sm); padding: 10px 14px;
+  }
+  .stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-light); margin-bottom: 4px; }
+  .stat-val { font-size: 17px; font-weight: 700; color: var(--green-dark); }
+  .stat-val.danger { color: #c0392b; }
+
+  .finance-section-header {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700; color: var(--text-mid);
+    margin-bottom: 8px;
+  }
+  .finance-section-header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-mid); }
+  .expense-input-grid { display: grid; gap: 6px; margin-bottom: 8px; }
+  .expense-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .btn-expense {
+    width: 100%; padding: 8px; background: var(--green-dark); color: white;
+    border: none; border-radius: var(--radius-sm); font-family: inherit;
+    font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 6px;
+    transition: background 0.2s;
+  }
+  .btn-expense:hover { background: var(--green-mid); }
+  .expense-list { list-style: none; font-size: 12px; margin-bottom: 10px; }
+  .expense-item {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 0; border-bottom: 1px solid var(--cream-dark);
+  }
+  .expense-item:last-child { border-bottom: none; }
+  .expense-amount { font-weight: 600; color: var(--green-dark); flex-shrink: 0; }
+  .expense-desc { flex: 1; color: var(--text-mid); }
+  .expense-del { background: none; border: none; cursor: pointer; color: var(--text-light); font-size: 13px; }
+  .expense-del:hover { color: #c0392b; }
+  .no-expense { font-size: 12px; color: var(--text-light); font-style: italic; }
+
+  /* Rincian kategori */
+  .rincian-title { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-light); margin-bottom: 6px; }
+  .rincian-item { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: var(--text-mid); }
+  .rincian-item span:last-child { font-weight: 600; color: var(--text-dark); }
+
+  .btn-budget {
+    width: 100%; padding: 9px; background: transparent;
+    border: 1.5px solid var(--green-dark); color: var(--green-dark);
+    border-radius: var(--radius-sm); font-family: inherit;
+    font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 10px;
+    transition: background 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-budget:hover { background: var(--green-pale); }
+
+  /* Budget modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--cream); border-radius: var(--radius);
+    padding: 24px; width: 300px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  .modal h3 { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 14px; }
+  .field { margin-bottom: 0; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .modal-actions .btn { flex: 1; }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+  }
+
+  /* ── RECURRING TASKS (Jadwal Mingguan) ─────────────────────── */
+  .recurring-section { margin-top: 2px; }
+  .recurring-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .recurring-list { list-style: none; display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .recurring-item {
+    border-radius: var(--radius-sm); padding: 7px 10px;
+    display: flex; flex-direction: column; gap: 4px;
+    background: var(--cream-dark); transition: background 0.15s;
+    position: relative;
+  }
+  .recurring-item.done-item  { background: var(--green-pale); }
+  .recurring-item.skip-item  { background: #fdf3e3; opacity: 0.75; }
+  .recurring-item-top { display: flex; align-items: center; gap: 8px; }
+  .recurring-check {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--green-mid); cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .recurring-check:hover { border-color: var(--green-dark); background: var(--green-pale); }
+  .recurring-check.done { background: var(--green-mid); border-color: var(--green-mid); }
+  .recurring-check.done::after { content: "✓"; color: white; font-size: 11px; font-weight: 700; }
+  .recurring-name { flex: 1; font-size: 13px; color: var(--text-dark); }
+  .recurring-name.done { text-decoration: line-through; color: var(--text-light); }
+  .recurring-name.skip { color: var(--text-light); font-style: italic; }
+  .recurring-actions { display: flex; gap: 4px; margin-left: auto; }
+  .btn-skip {
+    font-size: 10px; font-weight: 600; padding: 2px 7px;
+    border-radius: 6px; border: 1.5px solid #e67e22; background: transparent;
+    color: #e67e22; cursor: pointer; transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .btn-skip:hover { background: #fdf3e3; }
+  .btn-skip.active { background: #e67e22; color: white; }
+  .btn-rec-del {
+    font-size: 13px; background: none; border: none; cursor: pointer;
+    color: var(--text-light); opacity: 0.4; transition: opacity 0.15s; line-height: 1;
+  }
+  .recurring-item:hover .btn-rec-del { opacity: 1; }
+  .btn-rec-del:hover { color: #c0392b; }
+  .days-row { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 1px; }
+  .day-chip {
+    font-size: 9px; font-weight: 700; padding: 1px 5px;
+    border-radius: 4px; background: var(--sand); color: var(--text-light);
+  }
+  .day-chip.active { background: var(--green-mid); color: white; }
+
+  /* Form tambah recurring */
+  .recurring-form { display: flex; flex-direction: column; gap: 8px; }
+  .days-picker { display: flex; gap: 4px; flex-wrap: wrap; }
+  .day-btn {
+    font-size: 11px; font-weight: 700; padding: 4px 7px; border-radius: 6px;
+    border: 1.5px solid var(--sand); background: var(--white); color: var(--text-light);
+    cursor: pointer; transition: all 0.15s; user-select: none;
+  }
+  .day-btn.selected { background: var(--green-dark); border-color: var(--green-dark); color: white; }
+  .day-btn:hover:not(.selected) { border-color: var(--green-mid); color: var(--green-mid); }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="hamburger">☰</span>
+  <h1>Dashboard Kelompok</h1>
+  <div class="header-right">
+    <div class="user-chip">
+      <span class="user-avatar">{{ full_name[0] | upper }}</span>
+      <span class="user-name">{{ full_name }}</span>
+    </div>
+    {% if role == 'admin' %}
+    <a href="/admin" class="header-link">⚙ Admin</a>
+    {% endif %}
+    <a href="/logout" class="btn-logout">Keluar →</a>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- LEFT: TASKS -->
+  <div class="card tasks-card">
+    <div class="tasks-title">Today's Task(s)</div>
+    <div class="today-badge" id="today-badge">Loading...</div>
+    <div class="progress-row">
+      <span class="progress-label">Progress</span>
+      <span class="progress-count" id="progress-count">0 / 0</span>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+
+    <div class="all-done-banner" id="all-done-banner">
+      <div class="all-done-icon">✓</div>
+      <span>Semua tugas selesai! 🎉</span>
+    </div>
+
+    <ul class="task-list" id="today-task-list">
+      <li class="no-task-msg">Belum ada tugas di hari ini.<br>Tambah lewat kalender!</li>
+    </ul>
+
+    <hr class="divider">
+
+    <div class="section-label">Jenis Tugas</div>
+    <ul class="type-list" id="type-list">
+      <li class="no-task-msg" style="font-style:italic;font-size:12px;">Belum ada jenis tugas</li>
+    </ul>
+
+    <hr class="divider">
+
+    <div class="section-label">Tambah Jenis Tugas</div>
+    <div class="input-row">
+      <input class="input-text" type="text" id="new-type-input" placeholder="Nama tugas baru...">
+    </div>
+    <div class="color-row">
+      <span class="color-label">Warna:</span>
+      <span class="color-swatch active" data-color="#2d5a27" style="background:#2d5a27"></span>
+      <span class="color-swatch" data-color="#e67e22" style="background:#e67e22"></span>
+      <span class="color-swatch" data-color="#2980b9" style="background:#2980b9"></span>
+      <span class="color-swatch" data-color="#8e44ad" style="background:#8e44ad"></span>
+      <span class="color-swatch" data-color="#16a085" style="background:#16a085"></span>
+    </div>
+    <button class="btn" onclick="addTaskType()">+ Tambah</button>
+
+    <hr class="divider">
+
+    <!-- ── JADWAL MINGGUAN ── -->
+    <div class="recurring-section">
+      <div class="recurring-header">
+        <div class="section-label" style="margin-bottom:0">Jadwal Mingguan</div>
+        <button onclick="toggleRecurringForm()" id="rec-form-toggle"
+          style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--green-dark);line-height:1;"
+          title="Tambah jadwal mingguan">＋</button>
+      </div>
+
+      <!-- Daftar recurring tasks hari ini -->
+      <ul class="recurring-list" id="recurring-today-list">
+        <li class="no-task-msg" style="font-style:italic;font-size:12px;">Tidak ada jadwal hari ini.</li>
+      </ul>
+
+      <!-- Form tambah recurring (hidden by default) -->
+      <div id="recurring-form" style="display:none;">
+        <div class="recurring-form">
+          <select class="task-type-select" id="rec-type-select">
+            <option value="">— Pilih jenis tugas —</option>
+          </select>
+          <div class="days-picker" id="days-picker">
+            <span class="day-btn" data-day="0">Min</span>
+            <span class="day-btn" data-day="1">Sen</span>
+            <span class="day-btn" data-day="2">Sel</span>
+            <span class="day-btn" data-day="3">Rab</span>
+            <span class="day-btn" data-day="4">Kam</span>
+            <span class="day-btn" data-day="5">Jum</span>
+            <span class="day-btn" data-day="6">Sab</span>
+          </div>
+          <button class="btn" onclick="addRecurring()" style="padding:7px;">✓ Simpan Jadwal</button>
+        </div>
+        <hr class="divider" style="margin:10px 0;">
+      </div>
+
+      <!-- Semua jadwal mingguan yang terdaftar -->
+      <div class="section-label" id="rec-all-label" style="margin-top:4px;display:none;">Semua Jadwal</div>
+      <ul class="recurring-list" id="recurring-all-list"></ul>
+    </div>
+  </div>
+
+  <!-- MIDDLE: CALENDAR + DATE PANEL -->
+  <div class="calendar-wrap">
+    <div class="card cal-card">
+      <div class="cal-header">
+        <button class="cal-nav" onclick="changeMonth(-1)">←</button>
+        <div class="cal-title" id="cal-title"></div>
+        <button class="cal-nav" onclick="changeMonth(1)">→</button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-day-header">Sun</div>
+        <div class="cal-day-header">Mon</div>
+        <div class="cal-day-header">Tue</div>
+        <div class="cal-day-header">Wed</div>
+        <div class="cal-day-header">Thu</div>
+        <div class="cal-day-header">Fri</div>
+        <div class="cal-day-header">Sat</div>
+      </div>
+      <div class="cal-grid" id="cal-days"></div>
+    </div>
+
+    <div class="card date-panel">
+      <div class="date-panel-title" id="panel-date-title"></div>
+      <div class="date-panel-subtitle" id="panel-task-count">Belum ada tugas di hari ini.</div>
+      <div class="add-task-row">
+        <select class="task-type-select" id="new-task-type">
+          <option value="">— Pilih jenis tugas —</option>
+        </select>
+        <button class="btn-add" onclick="addTask()">+ Tambah</button>
+      </div>
+      <ul class="task-list" id="panel-task-list" style="margin-top:10px"></ul>
+    </div>
+  </div>
+
+  <!-- RIGHT: KEUANGAN -->
+  <div class="card finance-card">
+    <div class="finance-title">Keuangan</div>
+
+    <div class="donut-wrap">
+      <svg class="donut-svg" viewBox="0 0 100 100">
+        <circle class="donut-track" cx="50" cy="50" r="36"/>
+        <circle class="donut-fill" id="donut-fill" cx="50" cy="50" r="36"
+          stroke-dasharray="226.2" stroke-dashoffset="226.2"
+          transform="rotate(-90 50 50)"/>
+        <text class="donut-text" x="50" y="55" text-anchor="middle" id="donut-pct">0%</text>
+      </svg>
+    </div>
+    <div class="donut-sub">Dari total anggaran<br>telah digunakan</div>
+
+    <div class="finance-stats">
+      <div class="stat-box">
+        <div class="stat-label">Total Anggaran</div>
+        <div class="stat-val" id="stat-budget">Rp 0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Sudah Digunakan</div>
+        <div class="stat-val" id="stat-used">Rp 0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Sisa Dana</div>
+        <div class="stat-val" id="stat-remain">Rp 0</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:2px;">tersisa</div>
+      </div>
+    </div>
+
+    <div class="finance-section-header">
+      <div class="dot"></div>
+      <span>CATAT PENGELUARAN</span>
+      <span id="expense-date-label" style="margin-left:auto;font-weight:400;color:var(--text-light);font-size:11px;"></span>
+    </div>
+
+    <div class="expense-input-grid">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:13px;color:var(--text-mid);">Rp</span>
+        <input class="input-text" type="number" id="exp-amount" placeholder="Nominal..." style="flex:1">
+      </div>
+      <input class="input-text" type="text" id="exp-desc" placeholder="Keterangan / kategori...">
+    </div>
+    <button class="btn-expense" onclick="addExpense()">+ Tambah ke Pengeluaran</button>
+
+    <ul class="expense-list" id="expense-list">
+      <li class="no-expense">Belum ada pengeluaran</li>
+    </ul>
+
+    <hr class="divider">
+
+    <div class="rincian-title">Rincian Pengeluaran</div>
+    <div id="rincian-list"><div class="no-expense">Belum ada rincian kategori.</div></div>
+
+    <button class="btn-budget" onclick="openBudgetModal()">⚙ Atur Anggaran</button>
+    <button class="btn-budget" onclick="openPwModal()" style="margin-top:6px;">🔑 Ganti Password</button>
+  </div>
+</div>
+
+<!-- Budget Modal -->
+<div class="modal-overlay" id="budget-modal">
+  <div class="modal">
+    <h3>Atur Anggaran</h3>
+    <label style="font-size:12px;color:var(--text-light);margin-bottom:4px;display:block;">Total Anggaran Kelompok</label>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-size:14px;color:var(--text-mid);">Rp</span>
+      <input class="input-text" type="number" id="budget-input" placeholder="0" style="flex:1">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeBudgetModal()">Batal</button>
+      <button class="btn" onclick="saveBudget()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Password Modal -->
+<div class="modal-overlay" id="pw-modal">
+  <div class="modal">
+    <h3>Ganti Password</h3>
+    <div id="pw-modal-error" style="color:#c0392b;font-size:13px;margin-bottom:10px;display:none;"></div>
+    <div id="pw-modal-ok" style="color:#2d5a27;font-size:13px;margin-bottom:10px;display:none;">✓ Password berhasil diganti!</div>
+    <div class="field" style="margin-bottom:12px;">
+      <label style="font-size:11px;color:var(--text-light);margin-bottom:4px;display:block;">Password Lama</label>
+      <input class="input-text" type="password" id="old-pw-input" placeholder="Password saat ini...">
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+      <label style="font-size:11px;color:var(--text-light);margin-bottom:4px;display:block;">Password Baru</label>
+      <input class="input-text" type="password" id="new-pw-input" placeholder="Minimal 6 karakter...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closePwModal()">Batal</button>
+      <button class="btn" onclick="savePassword()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MONTHS_ID = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const DAYS_ID = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+
+let appData = { tasks: {}, task_types: [], expenses: {}, budget: 0 };
+let currentDate = new Date();
+let selectedDate = null;
+let todayStr = "";
+let selectedColor = "#2d5a27";
+
+async function init() {
+  const r = await fetch("/api/today"); const t = await r.json();
+  todayStr = t.date;
+  const d = new Date(todayStr + "T00:00:00");
+  currentDate = new Date(d.getFullYear(), d.getMonth(), 1);
+  selectedDate = todayStr;
+  const data = await fetch("/api/data").then(r=>r.json());
+  appData = data;
+  updateTodayBadge();
+  renderCalendar();
+  renderTodayTasks();
+  renderTypes();
+  renderPanel();
+  renderFinance();
+  loadRecurring();
+}
+
+function fmtDate(str) {
+  const d = new Date(str + "T00:00:00");
+  return `${d.getDate()} ${MONTHS_ID[d.getMonth()]} ${d.getFullYear()}`;
+}
+function fmtDateLong(str) {
+  const d = new Date(str + "T00:00:00");
+  return `${DAYS_ID[d.getDay()]}, ${d.getDate()} ${MONTHS_ID[d.getMonth()]} ${d.getFullYear()}`;
+}
+function fmtRp(n) {
+  return "Rp " + parseInt(n||0).toLocaleString("id-ID");
+}
+
+function updateTodayBadge() {
+  document.getElementById("today-badge").textContent = fmtDateLong(todayStr);
+}
+
+function renderTodayTasks() {
+  const list = appData.tasks[todayStr] || [];
+  const el = document.getElementById("today-task-list");
+  const done = list.filter(t=>t.done).length;
+  const total = list.length;
+  document.getElementById("progress-count").textContent = `${done} / ${total}`;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById("progress-bar").style.width = pct + "%";
+  // All-done banner
+  const banner = document.getElementById("all-done-banner");
+  if (banner) banner.classList.toggle("visible", total > 0 && done === total);
+  if (!total) { el.innerHTML = '<li class="no-task-msg">Belum ada tugas di hari ini.<br>Tambah lewat kalender!</li>'; return; }
+  el.innerHTML = list.map((t) => {
+    const typeObj = appData.task_types.find(x=>x.name===t.type);
+    const color = typeObj ? typeObj.color : "#888";
+    return `<li class="task-item ${t.done?'done-item':''}">
+      <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${todayStr}',${t.id})" title="${t.done?'Tandai belum selesai':'Tandai selesai'}"></div>
+      <span class="type-dot" style="background:${color}"></span>
+      <span class="task-label ${t.done?'done':''}">${t.task||t.type}</span>
+      <button class="task-del" onclick="deleteTask('${todayStr}',${t.id})">✕</button>
+    </li>`;
+  }).join('');
+}
+
+function renderTypes() {
+  const el = document.getElementById("type-list");
+  const sel = document.getElementById("new-task-type");
+  const expSel = document.getElementById("exp-type");
+  const types = appData.task_types;
+  if (!types.length) {
+    el.innerHTML = '<li class="no-task-msg" style="font-style:italic;font-size:12px;">Belum ada jenis tugas</li>';
+    sel.innerHTML = '<option value="">— Belum ada jenis tugas —</option>';
+    expSel.innerHTML = '<option value="Lainnya">Lainnya</option>';
+    return;
+  }
+  el.innerHTML = types.map(t=>`<li class="type-item">
+    <span class="type-dot" style="background:${t.color}"></span>
+    <span>${t.name}</span>
+    <button class="type-del" onclick="deleteType('${t.name}')">✕</button>
+  </li>`).join('');
+  sel.innerHTML = '<option value="">— Pilih jenis —</option>' + types.map(t=>`<option value="${t.name}">${t.name}</option>`).join('');
+  expSel.innerHTML = types.map(t=>`<option value="${t.name}">${t.name}</option>`).join('') + '<option value="Lainnya">Lainnya</option>';
+}
+
+// Returns JS day-of-week (0=Sun…6=Sat) from a YYYY-MM-DD string
+function jsDow(dateStr) {
+  return new Date(dateStr + "T00:00:00").getDay();
+}
+
+// Returns recurring tasks (from recurringData) active on a given dateStr
+function recurringForDate(dateStr) {
+  if (!recurringData || !recurringData.length) return [];
+  const dow = jsDow(dateStr);
+  return recurringData.filter(r => r.active && r.days.includes(dow));
+}
+
+function renderCalendar() {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  document.getElementById("cal-title").textContent = `${year}, ${MONTHS_ID[month]}`;
+  const firstDay    = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const daysInPrev  = new Date(year, month, 0).getDate();
+  const el = document.getElementById("cal-days");
+  let html = "";
+
+  for (let i=0;i<firstDay;i++) {
+    html += `<div class="cal-day other-month">${daysInPrev-firstDay+1+i}</div>`;
+  }
+
+  for (let d=1;d<=daysInMonth;d++) {
+    const dateStr    = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday    = dateStr===todayStr;
+    const isSelected = dateStr===selectedDate;
+    const dayTasks   = appData.tasks[dateStr]||[];
+    const recTasks   = recurringForDate(dateStr);
+
+    // Merge: regular tasks first, then recurring (deduplicated by type name)
+    // Each dot represents one task entry; recurring shows as a ring dot
+    const allDots = [];
+    dayTasks.forEach(t => {
+      const typeObj = appData.task_types.find(x=>x.name===t.type);
+      allDots.push({ color: typeObj ? typeObj.color : "var(--green-light)", recurring: false });
+    });
+    recTasks.forEach(r => {
+      const typeObj = appData.task_types.find(x=>x.name===r.type);
+      allDots.push({ color: typeObj ? typeObj.color : "var(--green-light)", recurring: true });
+    });
+
+    const hasExpense = (appData.expenses[dateStr] || []).length > 0;
+    let cls = "cal-day";
+    if (isSelected && !isToday) cls += " selected";
+    else if (isToday) cls += " today";
+    if (hasExpense) cls += " has-expense";
+
+    let dotsHtml = "";
+    if (allDots.length > 0) {
+      const maxDots = Math.min(allDots.length, 6);
+      let dots = "";
+      for (let k=0; k<maxDots; k++) {
+        const dot = allDots[k];
+        if (dot.recurring) {
+          // Recurring dot: ring style (border only, hollow)
+          dots += `<span class="cal-dot cal-dot-rec" style="border-color:${dot.color}"></span>`;
+        } else {
+          dots += `<span class="cal-dot" style="background:${dot.color}"></span>`;
+        }
+      }
+      const extra = allDots.length > 6
+        ? `<span style="font-size:7px;opacity:0.7;line-height:1">+${allDots.length-6}</span>` : "";
+      dotsHtml = `<div class="cal-dots">${dots}${extra}</div>`;
+    }
+    html += `<div class="${cls}" onclick="selectDate('${dateStr}')">${d}${dotsHtml}</div>`;
+  }
+
+  const remaining = 42 - firstDay - daysInMonth;
+  for (let i=1;i<=remaining;i++) html += `<div class="cal-day other-month">${i}</div>`;
+  el.innerHTML = html;
+}
+
+function selectDate(dateStr) {
+  selectedDate = dateStr;
+  renderCalendar();
+  renderPanel();
+  renderFinanceDate();
+}
+
+function renderPanel() {
+  if (!selectedDate) return;
+  const tasks = appData.tasks[selectedDate] || [];
+  document.getElementById("panel-date-title").textContent = fmtDate(selectedDate);
+  document.getElementById("panel-task-count").textContent = tasks.length ? `${tasks.length} tugas di hari ini.` : "Belum ada tugas di hari ini.";
+  document.getElementById("expense-date-label").textContent = fmtDate(selectedDate);
+  const el = document.getElementById("panel-task-list");
+  if (!tasks.length) { el.innerHTML = ''; return; }
+  el.innerHTML = tasks.map((t)=>{
+    const typeObj = appData.task_types.find(x=>x.name===t.type);
+    const color = typeObj ? typeObj.color : "#888";
+    return `<li class="task-item ${t.done?'done-item':''}">
+      <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${selectedDate}',${t.id})" title="${t.done?'Tandai belum selesai':'Tandai selesai'}"></div>
+      <span class="type-dot" style="background:${color}"></span>
+      <span class="task-label ${t.done?'done':''}">${t.task||t.type}</span>
+      <button class="task-del" onclick="deleteTask('${selectedDate}',${t.id})">✕</button>
+    </li>`;
+  }).join('');
+}
+
+function renderFinance() {
+  renderFinanceDate();
+  renderRincian();
+}
+
+function renderFinanceDate() {
+  const date = selectedDate || todayStr;
+  const expenses = appData.expenses[date] || [];
+  const el = document.getElementById("expense-list");
+  if (!expenses.length) { el.innerHTML = '<li class="no-expense">Belum ada pengeluaran</li>'; }
+  else {
+    el.innerHTML = expenses.map((e,i)=>`<li class="expense-item">
+      <span class="expense-amount">${fmtRp(e.amount)}</span>
+      <span class="expense-desc">${e.desc||e.type}</span>
+      <button class="expense-del" onclick="deleteExpense('${date}',${e.id})">✕</button>
+    </li>`).join('');
+  }
+  // Totals
+  const allExp = Object.values(appData.expenses).flat();
+  const totalUsed = allExp.reduce((s,e)=>s+parseInt(e.amount||0),0);
+  const budget = parseInt(appData.budget||0);
+  const remain = budget - totalUsed;
+  const pct = budget ? Math.min(100,Math.round(totalUsed/budget*100)) : 0;
+  document.getElementById("stat-budget").textContent = fmtRp(budget);
+  document.getElementById("stat-used").textContent = fmtRp(totalUsed);
+  const remEl = document.getElementById("stat-remain");
+  remEl.textContent = fmtRp(Math.max(0,remain));
+  remEl.className = "stat-val" + (remain < 0 ? " danger" : "");
+  document.getElementById("donut-pct").textContent = pct + "%";
+  const circumference = 226.2;
+  const offset = circumference - (pct/100)*circumference;
+  document.getElementById("donut-fill").setAttribute("stroke-dashoffset", offset);
+  renderRincian();
+}
+
+function renderRincian() {
+  const allExp = Object.values(appData.expenses).flat();
+  const byDesc = {};
+  allExp.forEach(e => {
+    const key = e.desc || e.type || "Pengeluaran";
+    byDesc[key] = (byDesc[key] || 0) + parseInt(e.amount || 0);
+  });
+  const el = document.getElementById("rincian-list");
+  if (!Object.keys(byDesc).length) {
+    el.innerHTML = '<div class="no-expense">Belum ada rincian.</div>'; return;
+  }
+  // Sort by amount descending
+  const sorted = Object.entries(byDesc).sort((a,b) => b[1]-a[1]);
+  el.innerHTML = sorted.map(([k,v]) =>
+    `<div class="rincian-item"><span>${k}</span><span>${fmtRp(v)}</span></div>`
+  ).join('');
+}
+
+// ACTIONS
+async function addTaskType() {
+  const name = document.getElementById("new-type-input").value.trim();
+  if (!name) return;
+  const r = await fetch("/api/task_types",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,color:selectedColor})});
+  appData.task_types = await r.json();
+  document.getElementById("new-type-input").value = "";
+  renderTypes(); renderCalendar(); renderPanel(); if(typeof updateRecTypeSelect!=='undefined') updateRecTypeSelect();
+}
+
+async function deleteType(name) {
+  const r = await fetch(`/api/task_types/${encodeURIComponent(name)}`,{method:"DELETE"});
+  appData.task_types = await r.json();
+  renderTypes(); renderPanel();
+}
+
+async function addTask() {
+  const type = document.getElementById("new-task-type").value;
+  if (!type || !selectedDate) return;
+  const r = await fetch("/api/tasks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({date:selectedDate,task:type,type})});
+  const tasks = await r.json();
+  if (!appData.tasks) appData.tasks = {};
+  appData.tasks[selectedDate] = tasks;
+  renderPanel(); renderCalendar();
+  if (selectedDate===todayStr) renderTodayTasks();
+}
+
+async function toggleTask(date, taskId) {
+  const r = await fetch(`/api/tasks/${taskId}/toggle`,{method:"POST"});
+  const tasks = await r.json();
+  appData.tasks[date] = tasks;
+  renderPanel(); renderCalendar(); if (date===todayStr) renderTodayTasks();
+}
+
+async function deleteTask(date, taskId) {
+  const r = await fetch(`/api/tasks/${taskId}`,{method:"DELETE"});
+  const tasks = await r.json();
+  appData.tasks[date] = tasks;
+  renderPanel(); renderCalendar(); if (date===todayStr) renderTodayTasks();
+}
+
+async function addExpense() {
+  const amount = document.getElementById("exp-amount").value;
+  const desc   = document.getElementById("exp-desc").value.trim() || "Pengeluaran";
+  const date   = selectedDate || todayStr;
+  if (!amount) return;
+  const r    = await fetch("/api/expenses", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({date, amount, desc, type: desc})});
+  const data = await r.json();
+  appData.expenses = data.expenses;
+  appData.budget   = data.budget;
+  document.getElementById("exp-amount").value = "";
+  document.getElementById("exp-desc").value   = "";
+  renderFinance();
+  renderCalendar();
+}
+
+async function deleteExpense(date, expId) {
+  const r    = await fetch(`/api/expenses/${expId}`, {method:"DELETE"});
+  const data = await r.json();
+  appData.expenses = data.expenses;
+  appData.budget   = data.budget;
+  renderFinance();
+  renderCalendar();
+}
+
+function changeMonth(dir) {
+  currentDate.setMonth(currentDate.getMonth()+dir);
+  renderCalendar();
+}
+
+function openBudgetModal() {
+  document.getElementById("budget-input").value = appData.budget || "";
+  document.getElementById("budget-modal").classList.add("open");
+}
+function closeBudgetModal() {
+  document.getElementById("budget-modal").classList.remove("open");
+}
+async function saveBudget() {
+  const val = parseInt(document.getElementById("budget-input").value)||0;
+  await fetch("/api/budget",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({budget:val})});
+  appData.budget = val;
+  closeBudgetModal();
+  renderFinance();
+}
+
+// Color swatches
+document.querySelectorAll(".color-swatch").forEach(el=>{
+  el.addEventListener("click",()=>{
+    document.querySelectorAll(".color-swatch").forEach(s=>s.classList.remove("active"));
+    el.classList.add("active");
+    selectedColor = el.dataset.color;
+  });
+});
+
+// Enter key shortcuts
+document.getElementById("new-type-input").addEventListener("keydown",e=>{ if(e.key==="Enter") addTaskType(); });
+document.getElementById("exp-amount").addEventListener("keydown",e=>{ if(e.key==="Enter") addExpense(); });
+
+// ── RECURRING TASKS ──────────────────────────────────────────────────────────
+
+const DAY_NAMES = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+let recurringData  = [];
+let recurringToday = [];
+let selectedRecurDays = new Set();
+
+function toggleRecurringForm() {
+  const f = document.getElementById("recurring-form");
+  f.style.display = f.style.display === "none" ? "block" : "none";
+}
+
+async function loadRecurring() {
+  recurringData  = await fetch("/api/recurring").then(r=>r.json());
+  recurringToday = await fetch(`/api/recurring/status?date=${todayStr}`).then(r=>r.json());
+  renderRecurringToday();
+  renderRecurringAll();
+  updateRecTypeSelect();
+  renderCalendar(); // redraw calendar with recurring dots
+}
+
+function updateRecTypeSelect() {
+  const sel   = document.getElementById("rec-type-select");
+  const types = appData.task_types || [];
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Pilih jenis tugas —</option>' +
+    types.map(t=>`<option value="${t.name}">${t.name}</option>`).join('');
+}
+
+function renderRecurringToday() {
+  const el = document.getElementById("recurring-today-list");
+  if (!el) return;
+  if (!recurringToday.length) {
+    el.innerHTML = '<li class="no-task-msg" style="font-style:italic;font-size:12px;">Tidak ada jadwal hari ini.</li>';
+    return;
+  }
+  el.innerHTML = recurringToday.map(r => {
+    const typeObj = (appData.task_types||[]).find(x=>x.name===r.type);
+    const color   = typeObj ? typeObj.color : "#aaa";
+    const isDone  = r.status === "done";
+    const isSkip  = r.status === "skipped";
+    const itemCls = isDone ? "done-item" : isSkip ? "skip-item" : "";
+    const chkCls  = isDone ? "done" : "";
+    const nameCls = isDone ? "done" : isSkip ? "skip" : "";
+    return `<li class="recurring-item ${itemCls}">
+      <div class="recurring-item-top">
+        <div class="recurring-check ${chkCls}"
+             onclick="toggleRecurringDone(${r.id},'${r.week_key}')"
+             title="${isDone?'Tandai belum selesai':'Tandai selesai'}"></div>
+        <span class="type-dot" style="background:${color};width:8px;height:8px;border-radius:50%;flex-shrink:0;"></span>
+        <span class="recurring-name ${nameCls}">${r.name}</span>
+        <div class="recurring-actions">
+          <button class="btn-skip ${isSkip?'active':''}"
+                  onclick="toggleSkipRecurring(${r.id},'${r.week_key}')"
+                  title="${isSkip?'Batalkan skip':'Skip minggu ini'}">
+            ${isSkip ? '↩ Batal skip' : 'Skip minggu ini'}
+          </button>
+        </div>
+      </div>
+    </li>`;
+  }).join('');
+}
+
+function renderRecurringAll() {
+  const el    = document.getElementById("recurring-all-list");
+  const label = document.getElementById("rec-all-label");
+  if (!el) return;
+  if (!recurringData.length) { el.innerHTML=""; if(label) label.style.display="none"; return; }
+  if (label) label.style.display="block";
+  el.innerHTML = recurringData.map(r => {
+    const typeObj = (appData.task_types||[]).find(x=>x.name===r.type);
+    const color   = typeObj ? typeObj.color : "#aaa";
+    const dayChips = DAY_NAMES.map((name,i) =>
+      `<span class="day-chip ${r.days.includes(i)?'active':''}">${name}</span>`
+    ).join('');
+    return `<li class="recurring-item" style="opacity:${r.active?1:0.5}">
+      <div class="recurring-item-top">
+        <span class="type-dot" style="background:${color};width:8px;height:8px;border-radius:50%;flex-shrink:0;"></span>
+        <span class="recurring-name" style="${!r.active?'text-decoration:line-through;color:var(--text-light)':''}">${r.name}</span>
+        <div class="recurring-actions">
+          <button class="btn-skip" onclick="toggleActiveRecurring(${r.id})"
+            style="border-color:var(--text-light);color:var(--text-light);">
+            ${r.active ? '⏸ Jeda' : '▶ Aktif'}
+          </button>
+          <button class="btn-rec-del" onclick="deleteRecurring(${r.id})" title="Hapus">✕</button>
+        </div>
+      </div>
+      <div class="days-row">${dayChips}</div>
+    </li>`;
+  }).join('');
+}
+
+async function addRecurring() {
+  const type = document.getElementById("rec-type-select").value;
+  const days = [...selectedRecurDays];
+  if (!type || !days.length) { alert("Pilih jenis tugas dan minimal 1 hari!"); return; }
+  const r = await fetch("/api/recurring", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({name:type, type, days})
+  });
+  recurringData  = await r.json();
+  recurringToday = await fetch(`/api/recurring/status?date=${todayStr}`).then(r=>r.json());
+  selectedRecurDays.clear();
+  document.querySelectorAll(".day-btn").forEach(b=>b.classList.remove("selected"));
+  document.getElementById("rec-type-select").value = "";
+  document.getElementById("recurring-form").style.display = "none";
+  renderRecurringToday();
+  renderRecurringAll();
+  renderCalendar();
+}
+
+async function deleteRecurring(rid) {
+  recurringData  = await fetch(`/api/recurring/${rid}`, {method:"DELETE"}).then(r=>r.json());
+  recurringToday = await fetch(`/api/recurring/status?date=${todayStr}`).then(r=>r.json());
+  renderRecurringToday(); renderRecurringAll(); renderCalendar();
+}
+
+async function toggleActiveRecurring(rid) {
+  recurringData  = await fetch(`/api/recurring/${rid}/toggle_active`, {method:"POST"}).then(r=>r.json());
+  recurringToday = await fetch(`/api/recurring/status?date=${todayStr}`).then(r=>r.json());
+  renderRecurringToday(); renderRecurringAll(); renderCalendar();
+}
+
+async function toggleRecurringDone(rid, wk) {
+  const item = recurringToday.find(r=>r.id===rid);
+  const ep   = (item && item.status==="done") ? "undone" : "done";
+  recurringToday = await fetch(`/api/recurring/${rid}/${ep}`, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({week_key:wk, date:todayStr})
+  }).then(r=>r.json());
+  renderRecurringToday();
+}
+
+async function toggleSkipRecurring(rid, wk) {
+  const item = recurringToday.find(r=>r.id===rid);
+  const ep   = (item && item.status==="skipped") ? "undone" : "skip";
+  recurringToday = await fetch(`/api/recurring/${rid}/${ep}`, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({week_key:wk, date:todayStr})
+  }).then(r=>r.json());
+  renderRecurringToday();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".day-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const d = parseInt(btn.dataset.day);
+      if (selectedRecurDays.has(d)) {
+        selectedRecurDays.delete(d); btn.classList.remove("selected");
+      } else {
+        selectedRecurDays.add(d); btn.classList.add("selected");
+      }
+    });
+  });
+});
+
+
+init();
+</script>
+</body>
+</html>

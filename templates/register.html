@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daftar Akun — Dashboard Kelompok</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #2d5a27; --green-mid: #4a7c59; --green-light: #6aaa78;
+    --green-pale: #e8f3e9; --cream: #f5f2ea; --cream-dark: #ede8dd;
+    --sand: #d6cfbf; --text-dark: #1a2e1a; --text-mid: #3d5c3d;
+    --text-light: #6b8f6b; --white: #fff; --red: #c0392b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh; display: flex;
+    background: var(--green-dark);
+  }
+
+  .left-panel {
+    width: 380px; flex-shrink: 0;
+    background: var(--green-dark);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 48px 36px; position: relative; overflow: hidden;
+  }
+  .left-panel::before {
+    content: ''; position: absolute;
+    width: 320px; height: 320px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); top: -80px; left: -80px;
+  }
+  .left-panel::after {
+    content: ''; position: absolute;
+    width: 260px; height: 260px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); bottom: -60px; right: -80px;
+  }
+  .brand { position: relative; z-index: 1; text-align: center; }
+  .brand-icon {
+    width: 72px; height: 72px; border-radius: 20px;
+    background: rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px; margin: 0 auto 20px; border: 1px solid rgba(255,255,255,0.15);
+  }
+  .brand h1 {
+    font-family: 'DM Serif Display', serif; font-size: 24px;
+    color: white; font-weight: 400; margin-bottom: 10px;
+  }
+  .brand p { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+  /* Step indicator */
+  .steps { margin-top: 40px; display: flex; flex-direction: column; gap: 16px; }
+  .step {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .step-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7);
+    flex-shrink: 0;
+  }
+  .step-text { font-size: 13px; color: rgba(255,255,255,0.6); }
+  .step-text strong { color: rgba(255,255,255,0.9); display: block; font-size: 13px; margin-bottom: 1px; }
+
+  /* RIGHT PANEL */
+  .right-panel {
+    flex: 1; background: var(--cream);
+    display: flex; align-items: center; justify-content: center;
+    padding: 32px 24px;
+    border-radius: 28px 0 0 28px;
+  }
+  .form-box { width: 100%; max-width: 400px; }
+
+  .form-title { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text-dark); margin-bottom: 4px; }
+  .form-sub { font-size: 13px; color: var(--text-light); margin-bottom: 28px; }
+
+  .alert {
+    border-radius: 10px; padding: 12px 16px; font-size: 13px;
+    display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px;
+  }
+  .alert-error { background: #fde8e8; border: 1px solid #f5c6c6; color: var(--red); }
+  .alert-success { background: var(--green-pale); border: 1px solid #b8dbbf; color: var(--green-dark); }
+  .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--text-light); margin-bottom: 6px;
+  }
+  .input-wrap { position: relative; }
+  .input-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    font-size: 15px; color: var(--text-light); pointer-events: none;
+  }
+  .field input {
+    width: 100%; padding: 11px 14px 11px 40px;
+    border: 1.5px solid var(--sand); border-radius: 12px;
+    font-family: inherit; font-size: 14px;
+    background: var(--white); color: var(--text-dark); outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field input:focus {
+    border-color: var(--green-mid);
+    box-shadow: 0 0 0 3px rgba(74,124,89,0.12);
+  }
+  .field input::placeholder { color: var(--sand); }
+  .field-hint { font-size: 11px; color: var(--text-light); margin-top: 5px; }
+
+  /* Password strength bar */
+  .pw-strength { margin-top: 6px; }
+  .pw-bar-wrap { height: 4px; background: var(--sand); border-radius: 4px; margin-bottom: 4px; }
+  .pw-bar { height: 100%; border-radius: 4px; width: 0%; transition: width 0.3s, background 0.3s; }
+  .pw-label { font-size: 11px; color: var(--text-light); }
+
+  .btn-register {
+    width: 100%; padding: 13px;
+    background: var(--green-dark); color: white; border: none;
+    border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: background 0.2s, transform 0.1s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 4px;
+  }
+  .btn-register:hover { background: var(--green-mid); }
+  .btn-register:active { transform: scale(0.99); }
+
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0; color: var(--text-light); font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--sand);
+  }
+  .link-row { text-align: center; font-size: 14px; color: var(--text-light); }
+  .link-row a { color: var(--green-dark); font-weight: 700; text-decoration: none; }
+  .link-row a:hover { text-decoration: underline; }
+
+  @media (max-width: 680px) {
+    body { flex-direction: column; }
+    .left-panel { width: 100%; padding: 28px 20px; border-radius: 0 0 24px 24px; }
+    .right-panel { border-radius: 0; padding: 28px 20px; }
+    .steps { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LEFT BRANDING -->
+<div class="left-panel">
+  <div class="brand">
+    <div class="brand-icon">📚</div>
+    <h1>Dashboard Kelompok</h1>
+    <p>Buat akun untuk mulai<br>mengelola tugas &amp; keuanganmu.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Isi formulir pendaftaran</strong>
+          Nama lengkap, username, &amp; password
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Login ke dashboard</strong>
+          Gunakan username &amp; password kamu
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>Mulai produktif!</strong>
+          Tugas, kalender, &amp; keuangan siap pakai
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT FORM -->
+<div class="right-panel">
+  <div class="form-box">
+    <div class="form-title">Buat Akun Baru</div>
+    <div class="form-sub">Daftar untuk bergabung dengan kelas</div>
+
+    {% if error %}
+    <div class="alert alert-error">
+      <span class="alert-icon">⚠️</span>
+      <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="alert alert-success">
+      <span class="alert-icon">✅</span>
+      <div>
+        <strong>{{ success }}</strong><br>
+        <a href="/login" style="color:var(--green-dark);font-weight:700;">Klik di sini untuk login →</a>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if not success %}
+    <form method="POST" action="/register" id="reg-form">
+      <div class="field">
+        <label>Nama Lengkap</label>
+        <div class="input-wrap">
+          <span class="input-icon">✏️</span>
+          <input type="text" name="full_name" placeholder="Nama lengkap kamu..." required autofocus>
+        </div>
+      </div>
+      <div class="field">
+        <label>Username</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input type="text" name="username" id="username" placeholder="Contoh: budi2025" required minlength="3">
+        </div>
+        <div class="field-hint">Minimal 3 karakter, tanpa spasi.</div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" name="password" id="password" placeholder="Minimal 6 karakter..." required minlength="6"
+                 oninput="checkPwStrength(this.value)">
+        </div>
+        <div class="pw-strength">
+          <div class="pw-bar-wrap"><div class="pw-bar" id="pw-bar"></div></div>
+          <div class="pw-label" id="pw-label">Belum diisi</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Konfirmasi Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" name="password2" id="password2" placeholder="Ulangi password..." required
+                 oninput="checkMatch()">
+        </div>
+        <div class="field-hint" id="match-hint"></div>
+      </div>
+
+      <button type="submit" class="btn-register">
+        Daftar Sekarang <span>→</span>
+      </button>
+    </form>
+    {% endif %}
+
+    <div class="divider">sudah punya akun?</div>
+    <div class="link-row">
+      <a href="/login">← Kembali ke halaman Login</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function checkPwStrength(pw) {
+  const bar   = document.getElementById("pw-bar");
+  const label = document.getElementById("pw-label");
+  if (!pw) { bar.style.width="0%"; label.textContent="Belum diisi"; bar.style.background=""; return; }
+  let score = 0;
+  if (pw.length >= 6)  score++;
+  if (pw.length >= 10) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const levels = [
+    { pct:"20%", color:"#e74c3c", text:"Sangat lemah" },
+    { pct:"40%", color:"#e67e22", text:"Lemah" },
+    { pct:"60%", color:"#f1c40f", text:"Cukup" },
+    { pct:"80%", color:"#2ecc71", text:"Kuat" },
+    { pct:"100%",color:"#27ae60", text:"Sangat kuat 💪" },
+  ];
+  const lvl = levels[Math.min(score-1, 4)];
+  bar.style.width = lvl.pct; bar.style.background = lvl.color;
+  label.textContent = lvl.text;
+}
+
+function checkMatch() {
+  const pw  = document.getElementById("password").value;
+  const pw2 = document.getElementById("password2").value;
+  const hint = document.getElementById("match-hint");
+  if (!pw2) { hint.textContent=""; return; }
+  if (pw === pw2) { hint.style.color="var(--green-mid)"; hint.textContent="✓ Password cocok"; }
+  else            { hint.style.color="var(--red)";       hint.textContent="✗ Password tidak cocok"; }
+}
+
+// Prevent spaces in username
+document.getElementById("username")?.addEventListener("input", function() {
+  this.value = this.value.replace(/\s/g,"");
+});
+</script>
+</body>
+</html>
