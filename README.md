@@ -7,7 +7,7 @@ Installation is quite simple.
 Firstly you need Python3 or higher so you can run it. 
 Next up do these steps:
 - Install all the of files and to put them in one folder. Make sure the path is something like this
-project/
+- project/
 ├── app.py
 ├── dashboard.db
 ├── requirements.txt
@@ -16,7 +16,6 @@ project/
     ├── login.html
     ├── register.html
     └── index.html
-
 - Open your terminal
 - Go to your file location
 - Install the requirements by typing and entering this into your terminal : pip install -r requirements.txt
