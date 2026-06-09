@@ -7,7 +7,7 @@ Installation is quite simple.
 Firstly you need Python3 or higher so you can run it. 
 Next up do these steps:
 - Install all the of files and to put them in one folder. Make sure the path is something like this
-  project/
+project/
   ├── app.py
   ├── dashboard.db
   ├── requirements.txt
