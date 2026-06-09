@@ -353,6 +353,11 @@
     padding: 24px; width: 300px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   }
   .modal h3 { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 14px; }
+  .period-toggle { display:flex; background:var(--cream-dark); border-radius:var(--radius-sm); padding:3px; gap:3px; margin-bottom:12px; }
+  .period-btn { flex:1; padding:8px; border:none; border-radius:6px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; background:transparent; color:var(--text-light); }
+  .period-btn.active { background:var(--green-dark); color:white; box-shadow:0 2px 6px rgba(45,90,39,0.25); }
+  .period-btn:not(.active):hover { background:var(--sand); color:var(--text-dark); }
+  .period-badge { font-size:11px; color:var(--text-light); text-align:center; margin-bottom:10px; background:var(--cream-dark); border-radius:6px; padding:5px 10px; }
   .field { margin-bottom: 0; }
   .modal-actions { display: flex; gap: 8px; margin-top: 12px; }
   .modal-actions .btn { flex: 1; }
@@ -422,12 +427,185 @@
   .day-btn.selected { background: var(--green-dark); border-color: var(--green-dark); color: white; }
   .day-btn:hover:not(.selected) { border-color: var(--green-mid); color: var(--green-mid); }
 
+
+  /* ── SIDEBAR ──────────────────────────────────────────── */
+  .sidebar-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.35); z-index: 150;
+    transition: opacity 0.25s;
+  }
+  .sidebar-overlay.open { display: block; }
+
+  .sidebar {
+    position: fixed; top: 0; left: 0; height: 100vh;
+    width: 270px; background: var(--green-dark);
+    z-index: 200; display: flex; flex-direction: column;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.25);
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .sidebar-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--green-light); color: white;
+    font-size: 18px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sidebar-user-name {
+    font-size: 15px; font-weight: 700; color: white; line-height: 1.2;
+  }
+  .sidebar-user-role {
+    font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px;
+  }
+  .sidebar-close {
+    margin-left: auto; background: none; border: none;
+    color: rgba(255,255,255,0.5); font-size: 20px; cursor: pointer;
+    line-height: 1; padding: 4px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .sidebar-close:hover { background: rgba(255,255,255,0.1); color: white; }
+
+  .sidebar-section { padding: 12px 12px 4px; }
+  .sidebar-section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: rgba(255,255,255,0.35);
+    padding: 0 8px; margin-bottom: 4px;
+  }
+  .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-menu-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    cursor: pointer; transition: background 0.15s;
+    color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 500;
+    border: none; background: none; width: 100%; text-align: left;
+    font-family: inherit;
+  }
+  .sidebar-menu-item:hover { background: rgba(255,255,255,0.1); color: white; }
+  .sidebar-menu-item:active { background: rgba(255,255,255,0.15); }
+  .sidebar-menu-item .menu-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .sidebar-menu-item .menu-arrow {
+    margin-left: auto; font-size: 12px;
+    color: rgba(255,255,255,0.3);
+  }
+  .sidebar-menu-item.danger { color: rgba(255,100,100,0.85); }
+  .sidebar-menu-item.danger:hover { background: rgba(255,80,80,0.12); color: #ff8080; }
+  .sidebar-menu-item.danger .menu-icon { background: rgba(255,80,80,0.15); }
+
+  .sidebar-divider {
+    border: none; border-top: 1px solid rgba(255,255,255,0.08);
+    margin: 8px 12px;
+  }
+  .sidebar-footer {
+    margin-top: auto; padding: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* Hamburger animasi */
+  .hamburger { transition: opacity 0.2s; }
+  .hamburger:hover { opacity: 1 !important; }
+
+
+  /* ── FORM TAMBAH TUGAS DI KIRI ──────────────────────────────── */
+  .add-task-left {
+    background: var(--cream-dark); border-radius: var(--radius-sm);
+    padding: 12px; margin-bottom: 4px;
+  }
+  .add-task-left-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--text-light); margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .selected-date-chip {
+    background: var(--green-dark); color: white; border-radius: 6px;
+    padding: 2px 8px; font-size: 11px; font-weight: 600; letter-spacing: 0;
+    text-transform: none;
+  }
+  .add-task-left .task-type-select { width: 100%; margin-bottom: 6px; }
+  .add-task-left .btn-add {
+    width: 100%; padding: 8px; background: var(--green-dark); color: white;
+    border: none; border-radius: var(--radius-sm); font-family: inherit;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+  }
+  .add-task-left .btn-add:hover { background: var(--green-mid); }
+
+  /* ── MODAL PENGATURAN TUGAS ──────────────────────────────────── */
+  .task-settings-modal .modal {
+    width: 420px; max-width: 95vw; max-height: 80vh;
+    display: flex; flex-direction: column;
+  }
+  /* Tab navigation */
+  .modal-tabs {
+    display: flex; gap: 2px; background: var(--cream-dark);
+    border-radius: var(--radius-sm); padding: 3px; margin-bottom: 16px;
+    flex-shrink: 0;
+  }
+  .modal-tab {
+    flex: 1; padding: 8px; border: none; border-radius: 6px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; background: transparent;
+    color: var(--text-light);
+  }
+  .modal-tab.active {
+    background: var(--green-dark); color: white;
+    box-shadow: 0 2px 6px rgba(45,90,39,0.25);
+  }
+  .modal-tab:not(.active):hover { background: var(--sand); color: var(--text-dark); }
+  .modal-tab-content { display: none; overflow-y: auto; flex: 1; }
+  .modal-tab-content.active { display: block; }
+
+  /* Jenis Tugas di modal */
+  .modal-type-list { list-style: none; margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
+  .modal-type-item {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--cream-dark); border-radius: var(--radius-sm);
+    padding: 8px 10px; font-size: 13px;
+  }
+  .modal-type-del {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-light); font-size: 13px; margin-left: auto;
+    opacity: 0.5; transition: opacity 0.15s;
+  }
+  .modal-type-item:hover .modal-type-del { opacity: 1; }
+  .modal-type-del:hover { color: #c0392b; }
+
+  /* Recurring di modal */
+  .modal-rec-list { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .modal-rec-item {
+    background: var(--cream-dark); border-radius: var(--radius-sm);
+    padding: 8px 10px;
+  }
+  .modal-rec-item-top {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+  }
+  .modal-rec-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .btn-settings {
+    width: 100%; padding: 10px; background: transparent;
+    border: 1.5px solid var(--green-dark); color: var(--green-dark);
+    border-radius: var(--radius-sm); font-family: inherit;
+    font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px;
+    transition: background 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-settings:hover { background: var(--green-pale); }
+
 </style>
 </head>
 <body>
 
 <div class="header">
-  <span class="hamburger">☰</span>
+  <button class="hamburger" onclick="openSidebar()" style="background:none;border:none;color:white;font-size:22px;cursor:pointer;opacity:0.85;padding:0;line-height:1;" title="Menu">☰</button>
   <h1>Dashboard Kelompok</h1>
   <div class="header-right">
     <div class="user-chip">
@@ -458,73 +636,37 @@
       <span>Semua tugas selesai! 🎉</span>
     </div>
 
+    <!-- Checker tugas hari ini -->
     <ul class="task-list" id="today-task-list">
-      <li class="no-task-msg">Belum ada tugas di hari ini.<br>Tambah lewat kalender!</li>
+      <li class="no-task-msg">Belum ada tugas di hari ini.</li>
     </ul>
 
-    <hr class="divider">
-
-    <div class="section-label">Jenis Tugas</div>
-    <ul class="type-list" id="type-list">
-      <li class="no-task-msg" style="font-style:italic;font-size:12px;">Belum ada jenis tugas</li>
-    </ul>
-
-    <hr class="divider">
-
-    <div class="section-label">Tambah Jenis Tugas</div>
-    <div class="input-row">
-      <input class="input-text" type="text" id="new-type-input" placeholder="Nama tugas baru...">
-    </div>
-    <div class="color-row">
-      <span class="color-label">Warna:</span>
-      <span class="color-swatch active" data-color="#2d5a27" style="background:#2d5a27"></span>
-      <span class="color-swatch" data-color="#e67e22" style="background:#e67e22"></span>
-      <span class="color-swatch" data-color="#2980b9" style="background:#2980b9"></span>
-      <span class="color-swatch" data-color="#8e44ad" style="background:#8e44ad"></span>
-      <span class="color-swatch" data-color="#16a085" style="background:#16a085"></span>
-    </div>
-    <button class="btn" onclick="addTaskType()">+ Tambah</button>
-
-    <hr class="divider">
-
-    <!-- ── JADWAL MINGGUAN ── -->
-    <div class="recurring-section">
-      <div class="recurring-header">
-        <div class="section-label" style="margin-bottom:0">Jadwal Mingguan</div>
-        <button onclick="toggleRecurringForm()" id="rec-form-toggle"
-          style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--green-dark);line-height:1;"
-          title="Tambah jadwal mingguan">＋</button>
-      </div>
-
-      <!-- Daftar recurring tasks hari ini -->
+    <!-- Jadwal Mingguan hari ini -->
+    <div class="recurring-section" style="margin-top:4px;">
       <ul class="recurring-list" id="recurring-today-list">
-        <li class="no-task-msg" style="font-style:italic;font-size:12px;">Tidak ada jadwal hari ini.</li>
       </ul>
-
-      <!-- Form tambah recurring (hidden by default) -->
-      <div id="recurring-form" style="display:none;">
-        <div class="recurring-form">
-          <select class="task-type-select" id="rec-type-select">
-            <option value="">— Pilih jenis tugas —</option>
-          </select>
-          <div class="days-picker" id="days-picker">
-            <span class="day-btn" data-day="0">Min</span>
-            <span class="day-btn" data-day="1">Sen</span>
-            <span class="day-btn" data-day="2">Sel</span>
-            <span class="day-btn" data-day="3">Rab</span>
-            <span class="day-btn" data-day="4">Kam</span>
-            <span class="day-btn" data-day="5">Jum</span>
-            <span class="day-btn" data-day="6">Sab</span>
-          </div>
-          <button class="btn" onclick="addRecurring()" style="padding:7px;">✓ Simpan Jadwal</button>
-        </div>
-        <hr class="divider" style="margin:10px 0;">
-      </div>
-
-      <!-- Semua jadwal mingguan yang terdaftar -->
-      <div class="section-label" id="rec-all-label" style="margin-top:4px;display:none;">Semua Jadwal</div>
-      <ul class="recurring-list" id="recurring-all-list"></ul>
     </div>
+
+    <hr class="divider">
+
+    <!-- Form tambah tugas per tanggal — selalu terlihat -->
+    <div class="add-task-left">
+      <div class="add-task-left-title">
+        <span>Tambah Tugas</span>
+        <span class="selected-date-chip" id="left-selected-date">—</span>
+      </div>
+      <select class="task-type-select" id="new-task-type" style="width:100%;margin-bottom:6px;">
+        <option value="">— Pilih jenis tugas —</option>
+      </select>
+      <button class="btn-add" onclick="addTask()">+ Tambah Tugas</button>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Tombol Pengaturan Tugas -->
+    <button class="btn-settings" onclick="openTaskSettingsModal()">
+      ⚙ Pengaturan Tugas
+    </button>
   </div>
 
   <!-- MIDDLE: CALENDAR + DATE PANEL -->
@@ -547,17 +689,6 @@
       <div class="cal-grid" id="cal-days"></div>
     </div>
 
-    <div class="card date-panel">
-      <div class="date-panel-title" id="panel-date-title"></div>
-      <div class="date-panel-subtitle" id="panel-task-count">Belum ada tugas di hari ini.</div>
-      <div class="add-task-row">
-        <select class="task-type-select" id="new-task-type">
-          <option value="">— Pilih jenis tugas —</option>
-        </select>
-        <button class="btn-add" onclick="addTask()">+ Tambah</button>
-      </div>
-      <ul class="task-list" id="panel-task-list" style="margin-top:10px"></ul>
-    </div>
   </div>
 
   <!-- RIGHT: KEUANGAN -->
@@ -573,7 +704,7 @@
         <text class="donut-text" x="50" y="55" text-anchor="middle" id="donut-pct">0%</text>
       </svg>
     </div>
-    <div class="donut-sub">Dari total anggaran<br>telah digunakan</div>
+    <div class="donut-sub" id="donut-sub-text">Dari anggaran bulan ini<br>telah digunakan</div>
 
     <div class="finance-stats">
       <div class="stat-box">
@@ -616,7 +747,136 @@
     <div id="rincian-list"><div class="no-expense">Belum ada rincian kategori.</div></div>
 
     <button class="btn-budget" onclick="openBudgetModal()">⚙ Atur Anggaran</button>
-    <button class="btn-budget" onclick="openPwModal()" style="margin-top:6px;">🔑 Ganti Password</button>
+  </div>
+</div>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <!-- Header: user info -->
+  <div class="sidebar-header">
+    <div class="sidebar-avatar">{{ full_name[0] | upper }}</div>
+    <div>
+      <div class="sidebar-user-name">{{ full_name }}</div>
+      <div class="sidebar-user-role">{{ 'Administrator' if role == 'admin' else 'Anggota Kelas' }}</div>
+    </div>
+    <button class="sidebar-close" onclick="closeSidebar()" title="Tutup">✕</button>
+  </div>
+
+  <!-- Menu Utama -->
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Menu</div>
+    <ul class="sidebar-menu">
+      <li>
+        <button class="sidebar-menu-item" onclick="closeSidebar()">
+          <span class="menu-icon">🏠</span>
+          <span>Dashboard</span>
+          <span class="menu-arrow">›</span>
+        </button>
+      </li>
+      {% if role == 'admin' %}
+      <li>
+        <button class="sidebar-menu-item" onclick="window.location='/admin'; closeSidebar()">
+          <span class="menu-icon">⚙️</span>
+          <span>Panel Admin</span>
+          <span class="menu-arrow">›</span>
+        </button>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <hr class="sidebar-divider">
+
+  <!-- Pengaturan -->
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Pengaturan</div>
+    <ul class="sidebar-menu">
+      <li>
+        <button class="sidebar-menu-item" onclick="openPwModal(); closeSidebar()">
+          <span class="menu-icon">🔑</span>
+          <span>Ganti Password</span>
+          <span class="menu-arrow">›</span>
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <hr class="sidebar-divider">
+
+  <!-- Footer: logout -->
+  <div class="sidebar-footer">
+    <ul class="sidebar-menu">
+      <li>
+        <button class="sidebar-menu-item danger" onclick="window.location='/logout'">
+          <span class="menu-icon">🚪</span>
+          <span>Keluar</span>
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Modal Pengaturan Tugas -->
+<div class="modal-overlay task-settings-modal" id="task-settings-modal">
+  <div class="modal">
+    <h3>Pengaturan Tugas</h3>
+
+    <!-- Tab navigation -->
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tab-btn-types"   onclick="switchTaskTab('types')">🏷 Jenis Tugas</button>
+      <button class="modal-tab"        id="tab-btn-recurring" onclick="switchTaskTab('recurring')">🔁 Jadwal Mingguan</button>
+    </div>
+
+    <!-- TAB: JENIS TUGAS -->
+    <div class="modal-tab-content active" id="tab-types">
+      <ul class="modal-type-list" id="modal-type-list">
+        <li class="no-task-msg" style="font-style:italic;font-size:12px;">Belum ada jenis tugas</li>
+      </ul>
+      <div class="section-label" style="margin-bottom:8px;">Tambah Jenis Tugas</div>
+      <div class="input-row" style="margin-bottom:8px;">
+        <input class="input-text" type="text" id="new-type-input" placeholder="Nama tugas baru...">
+      </div>
+      <div class="color-row" style="margin-bottom:10px;">
+        <span class="color-label">Warna:</span>
+        <span class="color-swatch active" data-color="#2d5a27" style="background:#2d5a27"></span>
+        <span class="color-swatch" data-color="#e67e22" style="background:#e67e22"></span>
+        <span class="color-swatch" data-color="#2980b9" style="background:#2980b9"></span>
+        <span class="color-swatch" data-color="#8e44ad" style="background:#8e44ad"></span>
+        <span class="color-swatch" data-color="#16a085" style="background:#16a085"></span>
+      </div>
+      <button class="btn" onclick="addTaskType()">+ Tambah Jenis</button>
+    </div>
+
+    <!-- TAB: JADWAL MINGGUAN -->
+    <div class="modal-tab-content" id="tab-recurring">
+      <!-- Daftar jadwal terdaftar -->
+      <ul class="modal-rec-list" id="modal-rec-list">
+        <li class="no-task-msg" style="font-style:italic;font-size:12px;">Belum ada jadwal mingguan</li>
+      </ul>
+      <div class="section-label" style="margin-bottom:8px;">Tambah Jadwal Baru</div>
+      <div class="recurring-form" style="display:flex;flex-direction:column;gap:8px;">
+        <select class="task-type-select" id="rec-type-select">
+          <option value="">— Pilih jenis tugas —</option>
+        </select>
+        <div class="days-picker" id="days-picker">
+          <span class="day-btn" data-day="0">Min</span>
+          <span class="day-btn" data-day="1">Sen</span>
+          <span class="day-btn" data-day="2">Sel</span>
+          <span class="day-btn" data-day="3">Rab</span>
+          <span class="day-btn" data-day="4">Kam</span>
+          <span class="day-btn" data-day="5">Jum</span>
+          <span class="day-btn" data-day="6">Sab</span>
+        </div>
+        <button class="btn" onclick="addRecurring()">✓ Simpan Jadwal</button>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <button class="btn btn-outline" onclick="closeTaskSettingsModal()">Tutup</button>
+    </div>
   </div>
 </div>
 
@@ -624,11 +884,18 @@
 <div class="modal-overlay" id="budget-modal">
   <div class="modal">
     <h3>Atur Anggaran</h3>
-    <label style="font-size:12px;color:var(--text-light);margin-bottom:4px;display:block;">Total Anggaran Kelompok</label>
-    <div style="display:flex;align-items:center;gap:6px;">
+    <label style="font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-light);margin-bottom:8px;display:block;">Periode Anggaran</label>
+    <div class="period-toggle">
+      <button class="period-btn active" id="btn-monthly" onclick="selectPeriod('monthly')">📅 Per Bulan</button>
+      <button class="period-btn"        id="btn-weekly"  onclick="selectPeriod('weekly')">📆 Per Minggu</button>
+    </div>
+    <div class="period-badge" id="budget-period-info">—</div>
+    <label style="font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-light);margin-bottom:6px;display:block;">Nominal Anggaran</label>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
       <span style="font-size:14px;color:var(--text-mid);">Rp</span>
       <input class="input-text" type="number" id="budget-input" placeholder="0" style="flex:1">
     </div>
+    <div style="font-size:11px;color:var(--text-light);margin-bottom:10px;" id="budget-reset-hint"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeBudgetModal()">Batal</button>
       <button class="btn" onclick="saveBudget()">Simpan</button>
@@ -661,7 +928,7 @@
 const MONTHS_ID = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 const DAYS_ID = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
 
-let appData = { tasks: {}, task_types: [], expenses: {}, budget: 0 };
+let appData = { tasks:{}, task_types:[], expenses:{}, budget:0, budget_mode:'monthly', period_used:0, period_start:'', period_end:'' };
 let currentDate = new Date();
 let selectedDate = null;
 let todayStr = "";
@@ -675,13 +942,18 @@ async function init() {
   selectedDate = todayStr;
   const data = await fetch("/api/data").then(r=>r.json());
   appData = data;
+  appData.budget_mode  = data.budget_mode  || 'monthly';
+  appData.period_used  = data.period_used  || 0;
+  appData.period_start = data.period_start || '';
+  appData.period_end   = data.period_end   || '';
   updateTodayBadge();
   renderCalendar();
   renderTodayTasks();
   renderTypes();
   renderPanel();
   renderFinance();
-  loadRecurring();
+  updateRecTypeSelect(); // pastikan dropdown sudah terisi sebelum loadRecurring
+  await loadRecurring();
 }
 
 function fmtDate(str) {
@@ -698,6 +970,8 @@ function fmtRp(n) {
 
 function updateTodayBadge() {
   document.getElementById("today-badge").textContent = fmtDateLong(todayStr);
+  const chip = document.getElementById("left-selected-date");
+  if (chip && selectedDate) chip.textContent = fmtDate(selectedDate);
 }
 
 function renderTodayTasks() {
@@ -725,23 +999,28 @@ function renderTodayTasks() {
 }
 
 function renderTypes() {
-  const el = document.getElementById("type-list");
-  const sel = document.getElementById("new-task-type");
-  const expSel = document.getElementById("exp-type");
   const types = appData.task_types;
-  if (!types.length) {
-    el.innerHTML = '<li class="no-task-msg" style="font-style:italic;font-size:12px;">Belum ada jenis tugas</li>';
-    sel.innerHTML = '<option value="">— Belum ada jenis tugas —</option>';
-    expSel.innerHTML = '<option value="Lainnya">Lainnya</option>';
-    return;
+  const selEl = document.getElementById("new-task-type");
+
+  // Update select di kiri
+  if (selEl) {
+    selEl.innerHTML = types.length
+      ? '<option value="">— Pilih jenis tugas —</option>' + types.map(t=>`<option value="${t.name}">${t.name}</option>`).join('')
+      : '<option value="">— Belum ada jenis tugas —</option>';
   }
-  el.innerHTML = types.map(t=>`<li class="type-item">
-    <span class="type-dot" style="background:${t.color}"></span>
-    <span>${t.name}</span>
-    <button class="type-del" onclick="deleteType('${t.name}')">✕</button>
-  </li>`).join('');
-  sel.innerHTML = '<option value="">— Pilih jenis —</option>' + types.map(t=>`<option value="${t.name}">${t.name}</option>`).join('');
-  expSel.innerHTML = types.map(t=>`<option value="${t.name}">${t.name}</option>`).join('') + '<option value="Lainnya">Lainnya</option>';
+
+  // Update list di modal
+  const modalList = document.getElementById("modal-type-list");
+  if (modalList) {
+    modalList.innerHTML = types.length
+      ? types.map(t=>`
+        <li class="modal-type-item">
+          <span class="type-dot" style="background:${t.color}"></span>
+          <span>${t.name}</span>
+          <button class="modal-type-del" onclick="deleteType('${t.name}')" title="Hapus">✕</button>
+        </li>`).join('')
+      : '<li class="no-task-msg" style="font-style:italic;font-size:12px;">Belum ada jenis tugas</li>';
+  }
 }
 
 // Returns JS day-of-week (0=Sun…6=Sat) from a YYYY-MM-DD string
@@ -828,92 +1107,23 @@ function selectDate(dateStr) {
 }
 
 function renderPanel() {
-  if (!selectedDate) return;
-  const tasks = appData.tasks[selectedDate] || [];
-  document.getElementById("panel-date-title").textContent = fmtDate(selectedDate);
-  document.getElementById("panel-task-count").textContent = tasks.length ? `${tasks.length} tugas di hari ini.` : "Belum ada tugas di hari ini.";
-  document.getElementById("expense-date-label").textContent = fmtDate(selectedDate);
-  const el = document.getElementById("panel-task-list");
-  if (!tasks.length) { el.innerHTML = ''; return; }
-  el.innerHTML = tasks.map((t)=>{
-    const typeObj = appData.task_types.find(x=>x.name===t.type);
-    const color = typeObj ? typeObj.color : "#888";
-    return `<li class="task-item ${t.done?'done-item':''}">
-      <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${selectedDate}',${t.id})" title="${t.done?'Tandai belum selesai':'Tandai selesai'}"></div>
-      <span class="type-dot" style="background:${color}"></span>
-      <span class="task-label ${t.done?'done':''}">${t.task||t.type}</span>
-      <button class="task-del" onclick="deleteTask('${selectedDate}',${t.id})">✕</button>
-    </li>`;
-  }).join('');
+  const chip = document.getElementById("left-selected-date");
+  if (chip && selectedDate) chip.textContent = fmtDate(selectedDate);
 }
 
-function renderFinance() {
-  renderFinanceDate();
-  renderRincian();
-}
-
-function renderFinanceDate() {
-  const date = selectedDate || todayStr;
-  const expenses = appData.expenses[date] || [];
-  const el = document.getElementById("expense-list");
-  if (!expenses.length) { el.innerHTML = '<li class="no-expense">Belum ada pengeluaran</li>'; }
-  else {
-    el.innerHTML = expenses.map((e,i)=>`<li class="expense-item">
-      <span class="expense-amount">${fmtRp(e.amount)}</span>
-      <span class="expense-desc">${e.desc||e.type}</span>
-      <button class="expense-del" onclick="deleteExpense('${date}',${e.id})">✕</button>
-    </li>`).join('');
-  }
-  // Totals
-  const allExp = Object.values(appData.expenses).flat();
-  const totalUsed = allExp.reduce((s,e)=>s+parseInt(e.amount||0),0);
-  const budget = parseInt(appData.budget||0);
-  const remain = budget - totalUsed;
-  const pct = budget ? Math.min(100,Math.round(totalUsed/budget*100)) : 0;
-  document.getElementById("stat-budget").textContent = fmtRp(budget);
-  document.getElementById("stat-used").textContent = fmtRp(totalUsed);
-  const remEl = document.getElementById("stat-remain");
-  remEl.textContent = fmtRp(Math.max(0,remain));
-  remEl.className = "stat-val" + (remain < 0 ? " danger" : "");
-  document.getElementById("donut-pct").textContent = pct + "%";
-  const circumference = 226.2;
-  const offset = circumference - (pct/100)*circumference;
-  document.getElementById("donut-fill").setAttribute("stroke-dashoffset", offset);
-  renderRincian();
-}
-
-function renderRincian() {
-  const allExp = Object.values(appData.expenses).flat();
-  const byDesc = {};
-  allExp.forEach(e => {
-    const key = e.desc || e.type || "Pengeluaran";
-    byDesc[key] = (byDesc[key] || 0) + parseInt(e.amount || 0);
-  });
-  const el = document.getElementById("rincian-list");
-  if (!Object.keys(byDesc).length) {
-    el.innerHTML = '<div class="no-expense">Belum ada rincian.</div>'; return;
-  }
-  // Sort by amount descending
-  const sorted = Object.entries(byDesc).sort((a,b) => b[1]-a[1]);
-  el.innerHTML = sorted.map(([k,v]) =>
-    `<div class="rincian-item"><span>${k}</span><span>${fmtRp(v)}</span></div>`
-  ).join('');
-}
-
-// ACTIONS
 async function addTaskType() {
   const name = document.getElementById("new-type-input").value.trim();
   if (!name) return;
   const r = await fetch("/api/task_types",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,color:selectedColor})});
   appData.task_types = await r.json();
   document.getElementById("new-type-input").value = "";
-  renderTypes(); renderCalendar(); renderPanel(); if(typeof updateRecTypeSelect!=='undefined') updateRecTypeSelect();
+  renderTypes(); renderCalendar(); renderPanel(); updateRecTypeSelect();
 }
 
 async function deleteType(name) {
   const r = await fetch(`/api/task_types/${encodeURIComponent(name)}`,{method:"DELETE"});
   appData.task_types = await r.json();
-  renderTypes(); renderPanel();
+  renderTypes(); renderPanel(); updateRecTypeSelect();
 }
 
 async function addTask() {
@@ -948,8 +1158,12 @@ async function addExpense() {
   if (!amount) return;
   const r    = await fetch("/api/expenses", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({date, amount, desc, type: desc})});
   const data = await r.json();
-  appData.expenses = data.expenses;
-  appData.budget   = data.budget;
+  appData.expenses    = data.expenses;
+  appData.budget      = data.budget;
+  appData.budget_mode = data.budget_mode  || appData.budget_mode;
+  appData.period_used = data.period_used  || 0;
+  appData.period_start= data.period_start || '';
+  appData.period_end  = data.period_end   || '';
   document.getElementById("exp-amount").value = "";
   document.getElementById("exp-desc").value   = "";
   renderFinance();
@@ -959,10 +1173,86 @@ async function addExpense() {
 async function deleteExpense(date, expId) {
   const r    = await fetch(`/api/expenses/${expId}`, {method:"DELETE"});
   const data = await r.json();
-  appData.expenses = data.expenses;
-  appData.budget   = data.budget;
+  appData.expenses    = data.expenses;
+  appData.budget      = data.budget;
+  appData.budget_mode = data.budget_mode  || appData.budget_mode;
+  appData.period_used = data.period_used  || 0;
+  appData.period_start= data.period_start || '';
+  appData.period_end  = data.period_end   || '';
   renderFinance();
   renderCalendar();
+}
+
+
+function renderFinance() {
+  renderFinanceDate();
+  renderRincian();
+}
+
+function renderFinanceDate() {
+  const date     = selectedDate || todayStr;
+  const expenses = (appData.expenses || {})[date] || [];
+  const el       = document.getElementById("expense-list");
+
+  // Tampilkan daftar pengeluaran tanggal terpilih
+  if (el) {
+    el.innerHTML = expenses.length
+      ? expenses.map(e => `
+        <li class="expense-item">
+          <span class="expense-amount">${fmtRp(e.amount)}</span>
+          <span class="expense-desc">${e.desc || e.type || ''}</span>
+          <button class="expense-del" onclick="deleteExpense('${date}', ${e.id})" title="Hapus">✕</button>
+        </li>`).join('')
+      : '<li class="no-expense">Belum ada pengeluaran</li>';
+  }
+
+  // Update label tanggal di header pengeluaran
+  const dateLabel = document.getElementById("expense-date-label");
+  if (dateLabel) dateLabel.textContent = fmtDate(date);
+
+  // Hitung dari period_used (sudah difilter server)
+  const totalUsed = parseInt(appData.period_used || 0);
+  const budget    = parseInt(appData.budget || 0);
+  const remain    = budget - totalUsed;
+  const pct       = budget ? Math.min(100, Math.round(totalUsed / budget * 100)) : 0;
+  const modeLabel = (appData.budget_mode === 'weekly') ? 'minggu ini' : 'bulan ini';
+
+  // Update donut
+  const donutSub = document.getElementById("donut-sub-text");
+  if (donutSub) donutSub.innerHTML = `Dari anggaran ${modeLabel}<br>telah digunakan`;
+  const donutPct = document.getElementById("donut-pct");
+  if (donutPct) donutPct.textContent = pct + "%";
+  const donutFill = document.getElementById("donut-fill");
+  if (donutFill) donutFill.setAttribute("stroke-dashoffset", 226.2 - (pct/100)*226.2);
+
+  // Update stats
+  const statBudget = document.getElementById("stat-budget");
+  const statUsed   = document.getElementById("stat-used");
+  const statRemain = document.getElementById("stat-remain");
+  if (statBudget) statBudget.textContent = fmtRp(budget);
+  if (statUsed)   statUsed.textContent   = fmtRp(totalUsed);
+  if (statRemain) {
+    statRemain.textContent = fmtRp(Math.max(0, remain));
+    statRemain.className   = "stat-val" + (remain < 0 ? " danger" : "");
+  }
+}
+
+function renderRincian() {
+  const allExp = Object.values(appData.expenses || {}).flat();
+  const byDesc = {};
+  allExp.forEach(e => {
+    const key = e.desc || e.type || "Pengeluaran";
+    byDesc[key] = (byDesc[key] || 0) + parseInt(e.amount || 0);
+  });
+  const el = document.getElementById("rincian-list");
+  if (!el) return;
+  if (!Object.keys(byDesc).length) {
+    el.innerHTML = '<div class="no-expense">Belum ada rincian.</div>'; return;
+  }
+  const sorted = Object.entries(byDesc).sort((a,b) => b[1]-a[1]);
+  el.innerHTML = sorted.map(([k,v]) =>
+    `<div class="rincian-item"><span>${k}</span><span>${fmtRp(v)}</span></div>`
+  ).join('');
 }
 
 function changeMonth(dir) {
@@ -970,17 +1260,52 @@ function changeMonth(dir) {
   renderCalendar();
 }
 
+let pendingBudgetMode = "monthly";
+
+function selectPeriod(mode) {
+  pendingBudgetMode = mode;
+  document.getElementById("btn-monthly").classList.toggle("active", mode==="monthly");
+  document.getElementById("btn-weekly").classList.toggle("active",  mode==="weekly");
+  document.getElementById("budget-input").value = "";
+  document.getElementById("budget-reset-hint").textContent = "⚠ Ganti periode akan reset nominal anggaran.";
+  updateBudgetPeriodInfo(mode);
+}
+
+function updateBudgetPeriodInfo(mode) {
+  const info = document.getElementById("budget-period-info");
+  if (!info) return;
+  const now = new Date();
+  if (mode === "weekly") {
+    const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7));
+    const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+    info.textContent = `Minggu ini: ${mon.getDate()} – ${sun.getDate()} ${MONTHS_ID[sun.getMonth()]} ${sun.getFullYear()}`;
+  } else {
+    const last = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    info.textContent = `Bulan ini: 1 – ${last} ${MONTHS_ID[now.getMonth()]} ${now.getFullYear()}`;
+  }
+}
+
 function openBudgetModal() {
+  pendingBudgetMode = appData.budget_mode || "monthly";
+  document.getElementById("btn-monthly").classList.toggle("active", pendingBudgetMode==="monthly");
+  document.getElementById("btn-weekly").classList.toggle("active",  pendingBudgetMode==="weekly");
   document.getElementById("budget-input").value = appData.budget || "";
+  document.getElementById("budget-reset-hint").textContent = "";
+  updateBudgetPeriodInfo(pendingBudgetMode);
   document.getElementById("budget-modal").classList.add("open");
 }
 function closeBudgetModal() {
   document.getElementById("budget-modal").classList.remove("open");
 }
 async function saveBudget() {
-  const val = parseInt(document.getElementById("budget-input").value)||0;
-  await fetch("/api/budget",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({budget:val})});
-  appData.budget = val;
+  const val  = parseInt(document.getElementById("budget-input").value)||0;
+  const data = await fetch("/api/budget",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({budget:val, mode:pendingBudgetMode})}).then(r=>r.json());
+  appData.budget      = data.budget;
+  appData.budget_mode = data.budget_mode;
+  appData.period_used = data.period_used  || 0;
+  appData.period_start= data.period_start || "";
+  appData.period_end  = data.period_end   || "";
   closeBudgetModal();
   renderFinance();
 }
@@ -998,17 +1323,90 @@ document.querySelectorAll(".color-swatch").forEach(el=>{
 document.getElementById("new-type-input").addEventListener("keydown",e=>{ if(e.key==="Enter") addTaskType(); });
 document.getElementById("exp-amount").addEventListener("keydown",e=>{ if(e.key==="Enter") addExpense(); });
 
+
+
+// ── MODAL PENGATURAN TUGAS ────────────────────────────────────────────────────
+
+function openTaskSettingsModal() {
+  renderTypes();
+  renderModalRecList();
+  updateRecTypeSelect();
+  switchTaskTab('types');
+  document.getElementById("task-settings-modal").classList.add("open");
+}
+
+function closeTaskSettingsModal() {
+  document.getElementById("task-settings-modal").classList.remove("open");
+}
+
+function switchTaskTab(tab) {
+  document.getElementById("tab-btn-types").classList.toggle("active",      tab==="types");
+  document.getElementById("tab-btn-recurring").classList.toggle("active",   tab==="recurring");
+  document.getElementById("tab-types").classList.toggle("active",           tab==="types");
+  document.getElementById("tab-recurring").classList.toggle("active",       tab==="recurring");
+  if (tab === "recurring") updateRecTypeSelect();
+}
+
+function renderModalRecList() {
+  const el = document.getElementById("modal-rec-list");
+  if (!el) return;
+  if (!recurringData || !recurringData.length) {
+    el.innerHTML = '<li class="no-task-msg" style="font-style:italic;font-size:12px;">Belum ada jadwal mingguan</li>';
+    return;
+  }
+  el.innerHTML = recurringData.map(r => {
+    const typeObj  = (appData.task_types||[]).find(x=>x.name===r.type);
+    const color    = typeObj ? typeObj.color : "#aaa";
+    const dayChips = DAY_NAMES.map((name,i)=>
+      `<span class="day-chip ${r.days.includes(i)?'active':''}">${name}</span>`
+    ).join('');
+    return `<li class="modal-rec-item" style="opacity:${r.active?1:0.5}">
+      <div class="modal-rec-item-top">
+        <span class="type-dot" style="background:${color};width:8px;height:8px;border-radius:50%;flex-shrink:0;"></span>
+        <span class="modal-rec-name" style="${!r.active?'text-decoration:line-through;color:var(--text-light)':''}">${r.name}</span>
+        <div style="display:flex;gap:4px;margin-left:auto;">
+          <button class="btn-skip" onclick="toggleActiveRecurring(${r.id})"
+            style="border-color:var(--text-light);color:var(--text-light);font-size:10px;padding:2px 7px;">
+            ${r.active ? '⏸ Jeda' : '▶ Aktif'}
+          </button>
+          <button class="btn-rec-del" onclick="deleteRecurring(${r.id})" title="Hapus">✕</button>
+        </div>
+      </div>
+      <div class="days-row">${dayChips}</div>
+    </li>`;
+  }).join('');
+}
+
+// ── SIDEBAR ──────────────────────────────────────────────────────────────────
+
+function openSidebar() {
+  document.getElementById("sidebar").classList.add("open");
+  document.getElementById("sidebar-overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeSidebar() {
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebar-overlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+// Tutup sidebar dengan tombol Escape
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    closeSidebar();
+    closeBudgetModal();
+    closePwModal();
+    closeTaskSettingsModal();
+  }
+});
+
 // ── RECURRING TASKS ──────────────────────────────────────────────────────────
 
 const DAY_NAMES = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
 let recurringData  = [];
 let recurringToday = [];
 let selectedRecurDays = new Set();
-
-function toggleRecurringForm() {
-  const f = document.getElementById("recurring-form");
-  f.style.display = f.style.display === "none" ? "block" : "none";
-}
 
 async function loadRecurring() {
   recurringData  = await fetch("/api/recurring").then(r=>r.json());
@@ -1062,32 +1460,7 @@ function renderRecurringToday() {
 }
 
 function renderRecurringAll() {
-  const el    = document.getElementById("recurring-all-list");
-  const label = document.getElementById("rec-all-label");
-  if (!el) return;
-  if (!recurringData.length) { el.innerHTML=""; if(label) label.style.display="none"; return; }
-  if (label) label.style.display="block";
-  el.innerHTML = recurringData.map(r => {
-    const typeObj = (appData.task_types||[]).find(x=>x.name===r.type);
-    const color   = typeObj ? typeObj.color : "#aaa";
-    const dayChips = DAY_NAMES.map((name,i) =>
-      `<span class="day-chip ${r.days.includes(i)?'active':''}">${name}</span>`
-    ).join('');
-    return `<li class="recurring-item" style="opacity:${r.active?1:0.5}">
-      <div class="recurring-item-top">
-        <span class="type-dot" style="background:${color};width:8px;height:8px;border-radius:50%;flex-shrink:0;"></span>
-        <span class="recurring-name" style="${!r.active?'text-decoration:line-through;color:var(--text-light)':''}">${r.name}</span>
-        <div class="recurring-actions">
-          <button class="btn-skip" onclick="toggleActiveRecurring(${r.id})"
-            style="border-color:var(--text-light);color:var(--text-light);">
-            ${r.active ? '⏸ Jeda' : '▶ Aktif'}
-          </button>
-          <button class="btn-rec-del" onclick="deleteRecurring(${r.id})" title="Hapus">✕</button>
-        </div>
-      </div>
-      <div class="days-row">${dayChips}</div>
-    </li>`;
-  }).join('');
+  renderModalRecList();
 }
 
 async function addRecurring() {
@@ -1103,22 +1476,22 @@ async function addRecurring() {
   selectedRecurDays.clear();
   document.querySelectorAll(".day-btn").forEach(b=>b.classList.remove("selected"));
   document.getElementById("rec-type-select").value = "";
-  document.getElementById("recurring-form").style.display = "none";
   renderRecurringToday();
   renderRecurringAll();
+  renderModalRecList();
   renderCalendar();
 }
 
 async function deleteRecurring(rid) {
   recurringData  = await fetch(`/api/recurring/${rid}`, {method:"DELETE"}).then(r=>r.json());
   recurringToday = await fetch(`/api/recurring/status?date=${todayStr}`).then(r=>r.json());
-  renderRecurringToday(); renderRecurringAll(); renderCalendar();
+  renderRecurringToday(); renderRecurringAll(); renderModalRecList(); renderCalendar();
 }
 
 async function toggleActiveRecurring(rid) {
   recurringData  = await fetch(`/api/recurring/${rid}/toggle_active`, {method:"POST"}).then(r=>r.json());
   recurringToday = await fetch(`/api/recurring/status?date=${todayStr}`).then(r=>r.json());
-  renderRecurringToday(); renderRecurringAll(); renderCalendar();
+  renderRecurringToday(); renderRecurringAll(); renderModalRecList(); renderCalendar();
 }
 
 async function toggleRecurringDone(rid, wk) {

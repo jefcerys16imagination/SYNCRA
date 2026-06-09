@@ -54,10 +54,12 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         );
         CREATE TABLE IF NOT EXISTS budgets (
-            user_id INTEGER PRIMARY KEY,
-            amount  INTEGER DEFAULT 0,
+            user_id     INTEGER PRIMARY KEY,
+            amount      INTEGER DEFAULT 0,
+            budget_mode TEXT    DEFAULT 'monthly',
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
         );
+        -- Migrasi: tambah kolom budget_mode jika belum ada (untuk DB lama)
         CREATE TABLE IF NOT EXISTS recurring_tasks (
             id        INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id   INTEGER NOT NULL,
@@ -84,6 +86,12 @@ def init_db():
                 "INSERT INTO users (username,password,full_name,role) VALUES (?,?,?,?)",
                 ("admin", hash_pw("admin123"), "Administrator", "admin")
             )
+        # Migrasi kolom budget_mode untuk database yang sudah ada
+        try:
+            c.execute("ALTER TABLE budgets ADD COLUMN budget_mode TEXT DEFAULT 'monthly'")
+            c.commit()
+        except Exception:
+            pass  # kolom sudah ada
         c.commit()
 
 def hash_pw(pw):
@@ -200,9 +208,15 @@ def api_data():
         for r in c.execute("SELECT id,date,amount,desc,type_name FROM expenses WHERE user_id=? ORDER BY id", (u,)):
             expenses.setdefault(r["date"], []).append(
                 {"id": r["id"], "amount": r["amount"], "desc": r["desc"], "type": r["type_name"]})
-        brow = c.execute("SELECT amount FROM budgets WHERE user_id=?", (u,)).fetchone()
+        brow = c.execute("SELECT amount,budget_mode FROM budgets WHERE user_id=?", (u,)).fetchone()
+        period_data = fetch_all_expenses(c, u)
     return jsonify({"task_types": types, "tasks": tasks,
-                    "expenses": expenses, "budget": brow["amount"] if brow else 0})
+                    "expenses": expenses,
+                    "budget":      brow["amount"]      if brow else 0,
+                    "budget_mode": brow["budget_mode"] if brow else "monthly",
+                    "period_used":  period_data["period_used"],
+                    "period_start": period_data["period_start"],
+                    "period_end":   period_data["period_end"]})
 
 # ── API: TASK TYPES ───────────────────────────────────────────────────────────
 
@@ -271,13 +285,50 @@ def del_task(tid):
 
 # ── API: EXPENSES ─────────────────────────────────────────────────────────────
 
+def current_period_range(mode):
+    """Return (date_start, date_end) string tuple for current week or month."""
+    today = datetime.now()
+    if mode == "weekly":
+        # Senin s.d. Minggu minggu ini
+        start = today - timedelta(days=today.weekday())
+        end   = start + timedelta(days=6)
+    else:
+        # 1 s.d. akhir bulan ini
+        start = today.replace(day=1)
+        # akhir bulan: hari pertama bulan depan - 1 hari
+        if today.month == 12:
+            end = today.replace(year=today.year+1, month=1, day=1) - timedelta(days=1)
+        else:
+            end = today.replace(month=today.month+1, day=1) - timedelta(days=1)
+    return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
+
 def fetch_all_expenses(c, u):
+    # Ambil semua pengeluaran (untuk tampilan kalender & panel)
     exp = {}
     for r in c.execute("SELECT id,date,amount,desc,type_name FROM expenses WHERE user_id=? ORDER BY id", (u,)):
         exp.setdefault(r["date"],[]).append(
             {"id":r["id"],"amount":r["amount"],"desc":r["desc"],"type":r["type_name"]})
-    brow = c.execute("SELECT amount FROM budgets WHERE user_id=?", (u,)).fetchone()
-    return {"expenses": exp, "budget": brow["amount"] if brow else 0}
+
+    brow = c.execute("SELECT amount,budget_mode FROM budgets WHERE user_id=?", (u,)).fetchone()
+    budget = brow["amount"] if brow else 0
+    mode   = brow["budget_mode"] if brow else "monthly"
+
+    # Hitung pengeluaran HANYA dalam periode berjalan
+    date_start, date_end = current_period_range(mode)
+    period_exp = []
+    for date, items in exp.items():
+        if date_start <= date <= date_end:
+            period_exp.extend(items)
+    period_used = sum(int(e["amount"]) for e in period_exp)
+
+    return {
+        "expenses":    exp,
+        "budget":      budget,
+        "budget_mode": mode,
+        "period_used": period_used,
+        "period_start": date_start,
+        "period_end":   date_end,
+    }
 
 @app.route("/api/expenses", methods=["POST"])
 @api_login_required
@@ -303,12 +354,23 @@ def del_expense(eid):
 @app.route("/api/budget", methods=["POST"])
 @api_login_required
 def set_budget():
-    u = uid(); amount = int(request.json.get("budget",0))
+    u      = uid()
+    amount = int(request.json.get("budget", 0))
+    mode   = request.json.get("mode", "monthly")
+    if mode not in ("monthly", "weekly"):
+        mode = "monthly"
     with get_db() as c:
-        c.execute("INSERT INTO budgets (user_id,amount) VALUES (?,?) "
-                  "ON CONFLICT(user_id) DO UPDATE SET amount=excluded.amount", (u,amount))
+        c.execute(
+            "INSERT INTO budgets (user_id,amount,budget_mode) VALUES (?,?,?) "
+            "ON CONFLICT(user_id) DO UPDATE SET amount=excluded.amount, budget_mode=excluded.budget_mode",
+            (u, amount, mode)
+        )
         c.commit()
-    return jsonify({"budget": amount})
+        data = fetch_all_expenses(c, u)
+    return jsonify({"budget": amount, "budget_mode": mode,
+                    "period_used": data["period_used"],
+                    "period_start": data["period_start"],
+                    "period_end": data["period_end"]})
 
 
 # ── API: RECURRING TASKS ─────────────────────────────────────────────────────
@@ -515,8 +577,9 @@ def admin_reset(target):
 
 # ── MAIN ──────────────────────────────────────────────────────────────────────
 
+init_db()  # selalu jalan — baik via PythonAnywhere maupun lokal
+
 if __name__ == "__main__":
-    init_db()
     print("\n╔══════════════════════════════════════╗")
     print("║   Dashboard Kelompok                 ║")
     print("║   http://localhost:5050              ║")
