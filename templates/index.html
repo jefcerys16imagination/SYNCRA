@@ -95,16 +95,6 @@
   /* ===== LEFT: TASKS ===== */
   .tasks-card { padding: 20px 18px; }
   .tasks-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text-dark); margin-bottom: 6px; }
-  .today-badge {
-    background: var(--cream-dark);
-    color: var(--text-mid);
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
-    margin-bottom: 14px;
-  }
   .progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .progress-label { font-size: 12px; color: var(--text-light); font-weight: 500; }
   .progress-count { font-size: 12px; color: var(--text-mid); font-weight: 600; }
@@ -623,8 +613,7 @@
 
   <!-- LEFT: TASKS -->
   <div class="card tasks-card">
-    <div class="tasks-title">Today's Task(s)</div>
-    <div class="today-badge" id="today-badge">Loading...</div>
+    <div class="tasks-title" id="tasks-title-text">Today's Task(s)</div>
     <div class="progress-row">
       <span class="progress-label">Progress</span>
       <span class="progress-count" id="progress-count">0 / 0</span>
@@ -694,6 +683,7 @@
   <!-- RIGHT: KEUANGAN -->
   <div class="card finance-card">
     <div class="finance-title">Keuangan</div>
+    <div style="text-align:center;font-size:11px;color:var(--text-light);margin-top:-8px;margin-bottom:6px;" id="finance-period-label"></div>
 
     <div class="donut-wrap">
       <svg class="donut-svg" viewBox="0 0 100 100">
@@ -968,32 +958,53 @@ function fmtRp(n) {
   return "Rp " + parseInt(n||0).toLocaleString("id-ID");
 }
 
+function ordinal(n) {
+  const s = ["th","st","nd","rd"], v = n%100;
+  return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+function fmtTaskTitle(dateStr) {
+  const d   = new Date(dateStr + "T00:00:00");
+  const day = DAYS_ID[d.getDay()];
+  return (dateStr===todayStr ? "Today — " : "") + `${ordinal(d.getDate())} of ${day}'s Task(s)`;
+}
+function fmtFinanceTitle(dateStr, mode) {
+  const d = new Date(dateStr + "T00:00:00");
+  if (mode === "weekly") {
+    const mon = new Date(d); mon.setDate(d.getDate()-((d.getDay()+6)%7));
+    const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+    return `${mon.getDate()} ${MONTHS_ID[mon.getMonth()]} – ${sun.getDate()} ${MONTHS_ID[sun.getMonth()]} ${sun.getFullYear()}`;
+  }
+  return `${MONTHS_ID[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 function updateTodayBadge() {
-  document.getElementById("today-badge").textContent = fmtDateLong(todayStr);
+  const titleEl = document.getElementById("tasks-title-text");
+  if (titleEl) titleEl.textContent = fmtTaskTitle(selectedDate||todayStr);
   const chip = document.getElementById("left-selected-date");
   if (chip && selectedDate) chip.textContent = fmtDate(selectedDate);
 }
 
 function renderTodayTasks() {
-  const list = appData.tasks[todayStr] || [];
-  const el = document.getElementById("today-task-list");
-  const done = list.filter(t=>t.done).length;
+  const date  = selectedDate || todayStr;
+  const list  = appData.tasks[date] || [];
+  const el    = document.getElementById("today-task-list");
+  const done  = list.filter(t=>t.done).length;
   const total = list.length;
+  const titleEl = document.getElementById("tasks-title-text");
+  if (titleEl) titleEl.textContent = fmtTaskTitle(date);
   document.getElementById("progress-count").textContent = `${done} / ${total}`;
-  const pct = total ? Math.round(done/total*100) : 0;
-  document.getElementById("progress-bar").style.width = pct + "%";
-  // All-done banner
+  document.getElementById("progress-bar").style.width = (total ? Math.round(done/total*100) : 0) + "%";
   const banner = document.getElementById("all-done-banner");
-  if (banner) banner.classList.toggle("visible", total > 0 && done === total);
-  if (!total) { el.innerHTML = '<li class="no-task-msg">Belum ada tugas di hari ini.<br>Tambah lewat kalender!</li>'; return; }
-  el.innerHTML = list.map((t) => {
+  if (banner) banner.classList.toggle("visible", total>0 && done===total);
+  if (!total) { el.innerHTML = `<li class="no-task-msg">Belum ada tugas di ${date===todayStr?'hari ini':'tanggal ini'}.</li>`; return; }
+  el.innerHTML = list.map(t => {
     const typeObj = appData.task_types.find(x=>x.name===t.type);
-    const color = typeObj ? typeObj.color : "#888";
+    const color   = typeObj ? typeObj.color : "#888";
     return `<li class="task-item ${t.done?'done-item':''}">
-      <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${todayStr}',${t.id})" title="${t.done?'Tandai belum selesai':'Tandai selesai'}"></div>
+      <div class="task-check ${t.done?'done':''}" onclick="toggleTask('${date}',${t.id})" title="${t.done?'Tandai belum selesai':'Tandai selesai'}"></div>
       <span class="type-dot" style="background:${color}"></span>
       <span class="task-label ${t.done?'done':''}">${t.task||t.type}</span>
-      <button class="task-del" onclick="deleteTask('${todayStr}',${t.id})">✕</button>
+      <button class="task-del" onclick="deleteTask('${date}',${t.id})">✕</button>
     </li>`;
   }).join('');
 }
@@ -1103,12 +1114,16 @@ function selectDate(dateStr) {
   selectedDate = dateStr;
   renderCalendar();
   renderPanel();
-  renderFinanceDate();
+  renderTodayTasks();
+  loadRecurringForDate(dateStr);
+  renderFinanceForDate(dateStr);
 }
 
 function renderPanel() {
   const chip = document.getElementById("left-selected-date");
   if (chip && selectedDate) chip.textContent = fmtDate(selectedDate);
+  const dateLabel = document.getElementById("expense-date-label");
+  if (dateLabel && selectedDate) dateLabel.textContent = fmtDate(selectedDate);
 }
 
 async function addTaskType() {
@@ -1134,21 +1149,21 @@ async function addTask() {
   if (!appData.tasks) appData.tasks = {};
   appData.tasks[selectedDate] = tasks;
   renderPanel(); renderCalendar();
-  if (selectedDate===todayStr) renderTodayTasks();
+  renderTodayTasks();
 }
 
 async function toggleTask(date, taskId) {
   const r = await fetch(`/api/tasks/${taskId}/toggle`,{method:"POST"});
   const tasks = await r.json();
   appData.tasks[date] = tasks;
-  renderPanel(); renderCalendar(); if (date===todayStr) renderTodayTasks();
+  renderPanel(); renderCalendar(); renderTodayTasks();
 }
 
 async function deleteTask(date, taskId) {
   const r = await fetch(`/api/tasks/${taskId}`,{method:"DELETE"});
   const tasks = await r.json();
   appData.tasks[date] = tasks;
-  renderPanel(); renderCalendar(); if (date===todayStr) renderTodayTasks();
+  renderPanel(); renderCalendar(); renderTodayTasks();
 }
 
 async function addExpense() {
@@ -1189,63 +1204,66 @@ function renderFinance() {
   renderRincian();
 }
 
-function renderFinanceDate() {
-  const date     = selectedDate || todayStr;
-  const expenses = (appData.expenses || {})[date] || [];
+function renderFinanceDate(dateStr) {
+  const date     = dateStr || selectedDate || todayStr;
+  const mode     = appData.budget_mode || 'monthly';
+  const expenses = (appData.expenses||{})[date]||[];
   const el       = document.getElementById("expense-list");
-
-  // Tampilkan daftar pengeluaran tanggal terpilih
   if (el) {
     el.innerHTML = expenses.length
-      ? expenses.map(e => `
-        <li class="expense-item">
+      ? expenses.map(e=>`<li class="expense-item">
           <span class="expense-amount">${fmtRp(e.amount)}</span>
-          <span class="expense-desc">${e.desc || e.type || ''}</span>
-          <button class="expense-del" onclick="deleteExpense('${date}', ${e.id})" title="Hapus">✕</button>
+          <span class="expense-desc">${e.desc||e.type||''}</span>
+          <button class="expense-del" onclick="deleteExpense('${date}',${e.id})" title="Hapus">✕</button>
         </li>`).join('')
       : '<li class="no-expense">Belum ada pengeluaran</li>';
   }
-
-  // Update label tanggal di header pengeluaran
   const dateLabel = document.getElementById("expense-date-label");
   if (dateLabel) dateLabel.textContent = fmtDate(date);
-
-  // Hitung dari period_used (sudah difilter server)
-  const totalUsed = parseInt(appData.period_used || 0);
-  const budget    = parseInt(appData.budget || 0);
+  const periodLabel = document.getElementById("finance-period-label");
+  if (periodLabel) periodLabel.textContent = fmtFinanceTitle(date, mode);
+  const totalUsed = parseInt(appData.period_used||0);
+  const budget    = parseInt(appData.budget||0);
   const remain    = budget - totalUsed;
-  const pct       = budget ? Math.min(100, Math.round(totalUsed / budget * 100)) : 0;
-  const modeLabel = (appData.budget_mode === 'weekly') ? 'minggu ini' : 'bulan ini';
-
-  // Update donut
-  const donutSub = document.getElementById("donut-sub-text");
-  if (donutSub) donutSub.innerHTML = `Dari anggaran ${modeLabel}<br>telah digunakan`;
-  const donutPct = document.getElementById("donut-pct");
-  if (donutPct) donutPct.textContent = pct + "%";
+  const pct       = budget ? Math.min(100,Math.round(totalUsed/budget*100)) : 0;
+  const modeLabel = mode==='weekly' ? 'minggu' : 'bulan';
+  const donutSub  = document.getElementById("donut-sub-text");
+  if (donutSub) donutSub.innerHTML = `Dari anggaran ${modeLabel}<br>${fmtFinanceTitle(date,mode)}`;
+  const donutPct  = document.getElementById("donut-pct");
+  if (donutPct) donutPct.textContent = pct+"%";
   const donutFill = document.getElementById("donut-fill");
-  if (donutFill) donutFill.setAttribute("stroke-dashoffset", 226.2 - (pct/100)*226.2);
-
-  // Update stats
+  if (donutFill) donutFill.setAttribute("stroke-dashoffset", 226.2-(pct/100)*226.2);
   const statBudget = document.getElementById("stat-budget");
   const statUsed   = document.getElementById("stat-used");
   const statRemain = document.getElementById("stat-remain");
   if (statBudget) statBudget.textContent = fmtRp(budget);
   if (statUsed)   statUsed.textContent   = fmtRp(totalUsed);
-  if (statRemain) {
-    statRemain.textContent = fmtRp(Math.max(0, remain));
-    statRemain.className   = "stat-val" + (remain < 0 ? " danger" : "");
-  }
+  if (statRemain) { statRemain.textContent=fmtRp(Math.max(0,remain)); statRemain.className="stat-val"+(remain<0?" danger":""); }
 }
 
 function renderRincian() {
-  const allExp = Object.values(appData.expenses || {}).flat();
+  const el = document.getElementById("rincian-list");
+  if (!el) return;
+
+  // Filter hanya pengeluaran dalam periode berjalan (period_start – period_end)
+  const start = appData.period_start;
+  const end   = appData.period_end;
+  let filtered;
+  if (start && end) {
+    filtered = Object.entries(appData.expenses || {})
+      .filter(([dt]) => dt >= start && dt <= end)
+      .flatMap(([, items]) => items);
+  } else {
+    // Fallback: semua pengeluaran
+    filtered = Object.values(appData.expenses || {}).flat();
+  }
+
   const byDesc = {};
-  allExp.forEach(e => {
+  filtered.forEach(e => {
     const key = e.desc || e.type || "Pengeluaran";
     byDesc[key] = (byDesc[key] || 0) + parseInt(e.amount || 0);
   });
-  const el = document.getElementById("rincian-list");
-  if (!el) return;
+
   if (!Object.keys(byDesc).length) {
     el.innerHTML = '<div class="no-expense">Belum ada rincian.</div>'; return;
   }
@@ -1253,6 +1271,31 @@ function renderRincian() {
   el.innerHTML = sorted.map(([k,v]) =>
     `<div class="rincian-item"><span>${k}</span><span>${fmtRp(v)}</span></div>`
   ).join('');
+}
+
+async function renderFinanceForDate(dateStr) {
+  const mode = appData.budget_mode || 'monthly';
+  // Hitung lokal dari expenses yang ada (tanpa server roundtrip)
+  const d = new Date(dateStr + "T00:00:00");
+  let start, end;
+  if (mode === 'weekly') {
+    const mon = new Date(d); mon.setDate(d.getDate()-((d.getDay()+6)%7));
+    const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+    start = mon.toISOString().slice(0,10);
+    end   = sun.toISOString().slice(0,10);
+  } else {
+    start = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+    const last = new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    end   = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(last).padStart(2,'0')}`;
+  }
+  const inPeriod = Object.entries(appData.expenses||{})
+    .filter(([dt]) => dt>=start && dt<=end)
+    .flatMap(([,items]) => items);
+  appData.period_used  = inPeriod.reduce((s,e)=>s+parseInt(e.amount||0),0);
+  appData.period_start = start;
+  appData.period_end   = end;
+  renderFinanceDate(dateStr);
+  renderRincian();
 }
 
 function changeMonth(dir) {
@@ -1410,11 +1453,17 @@ let selectedRecurDays = new Set();
 
 async function loadRecurring() {
   recurringData  = await fetch("/api/recurring").then(r=>r.json());
-  recurringToday = await fetch(`/api/recurring/status?date=${todayStr}`).then(r=>r.json());
+  recurringToday = await fetch(`/api/recurring/status?date=${selectedDate||todayStr}`).then(r=>r.json());
   renderRecurringToday();
   renderRecurringAll();
+  renderModalRecList();
   updateRecTypeSelect();
-  renderCalendar(); // redraw calendar with recurring dots
+  renderCalendar();
+}
+
+async function loadRecurringForDate(dateStr) {
+  recurringToday = await fetch(`/api/recurring/status?date=${dateStr}`).then(r=>r.json());
+  renderRecurringToday();
 }
 
 function updateRecTypeSelect() {
