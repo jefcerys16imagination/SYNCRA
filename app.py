@@ -9,6 +9,16 @@ app.permanent_session_lifetime = timedelta(days=7)
 
 DB = "dashboard.db"
 
+"""
+# ── SET TIME ──────────────────────────────────────────────────────────────────
+
+#def now_wib():
+    return datetime.now(ZoneInfo("Asia/Jakarta"))
+
+"""
+# i added this line inside pythonanywhere because they didn't use my current time region
+# for now the time is always set to WIB no matter where you are, this is a big oversight but i only intend to use this web-app around my campus
+
 # ── DATABASE ──────────────────────────────────────────────────────────────────
 
 def get_db():
@@ -192,6 +202,7 @@ def dashboard():
 @api_login_required
 def api_today():
     return jsonify({"date": datetime.now().strftime("%Y-%m-%d")})
+    # Each any every datetime.now() has been changed to now_wib inside pythonanywhere
 
 @app.route("/api/data")
 @api_login_required
