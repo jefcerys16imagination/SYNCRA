@@ -12,7 +12,7 @@ DB = "dashboard.db"
 """
 # ── SET TIME ──────────────────────────────────────────────────────────────────
 
-#def now_wib():
+def now_wib():
     return datetime.now(ZoneInfo("Asia/Jakarta"))
 
 """
@@ -202,7 +202,7 @@ def dashboard():
 @api_login_required
 def api_today():
     return jsonify({"date": datetime.now().strftime("%Y-%m-%d")})
-    # Each any every datetime.now() has been changed to now_wib inside pythonanywhere
+    # Each any every datetime.now() has been changed to now_wib() inside pythonanywhere
 
 @app.route("/api/data")
 @api_login_required
