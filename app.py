@@ -12,12 +12,13 @@ DB = "dashboard.db"
 """
 # ── SET TIME ──────────────────────────────────────────────────────────────────
 
-#def now_wib():
+def now_wib():
     return datetime.now(ZoneInfo("Asia/Jakarta"))
 
 """
 # i added this line inside pythonanywhere because they didn't use my current time region
 # for now the time is always set to WIB no matter where you are, this is a big oversight but i only intend to use this web-app around my campus
+# replace all datetime.now() with now_wib()
 
 # ── DATABASE ──────────────────────────────────────────────────────────────────
 
@@ -83,11 +84,11 @@ def init_db():
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id      INTEGER NOT NULL,
             recurring_id INTEGER NOT NULL,
-            week_key     TEXT NOT NULL,
+            date_key     TEXT NOT NULL,
             done         INTEGER DEFAULT 0,
             FOREIGN KEY(user_id)      REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY(recurring_id) REFERENCES recurring_tasks(id) ON DELETE CASCADE,
-            UNIQUE(recurring_id, week_key)
+            UNIQUE(recurring_id, date_key)
         );
         """)
         # Buat admin default jika belum ada
@@ -102,6 +103,35 @@ def init_db():
             c.commit()
         except Exception:
             pass  # kolom sudah ada
+        # Migrasi recurring_skips: week_key → date_key
+        try:
+            c.execute("ALTER TABLE recurring_skips ADD COLUMN date_key TEXT DEFAULT ''")
+            c.commit()
+        except Exception:
+            pass  # kolom sudah ada
+        # Pastikan UNIQUE constraint pada date_key ada (recreate jika perlu)
+        try:
+            # Cek apakah tabel masih pakai week_key sebagai UNIQUE
+            info = c.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='recurring_skips'").fetchone()
+            if info and "week_key" in info[0] and "date_key" not in info[0].replace("DEFAULT ''",""):
+                # Recreate tabel dengan constraint baru
+                c.executescript("""
+                    CREATE TABLE IF NOT EXISTS recurring_skips_new (
+                        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id      INTEGER NOT NULL,
+                        recurring_id INTEGER NOT NULL,
+                        date_key     TEXT NOT NULL DEFAULT '',
+                        done         INTEGER DEFAULT 0,
+                        FOREIGN KEY(user_id)      REFERENCES users(id) ON DELETE CASCADE,
+                        FOREIGN KEY(recurring_id) REFERENCES recurring_tasks(id) ON DELETE CASCADE,
+                        UNIQUE(recurring_id, date_key)
+                    );
+                    DROP TABLE recurring_skips;
+                    ALTER TABLE recurring_skips_new RENAME TO recurring_skips;
+                """)
+                c.commit()
+        except Exception as e:
+            pass
         c.commit()
 
 def hash_pw(pw):
@@ -202,7 +232,6 @@ def dashboard():
 @api_login_required
 def api_today():
     return jsonify({"date": datetime.now().strftime("%Y-%m-%d")})
-    # Each any every datetime.now() has been changed to now_wib inside pythonanywhere
 
 @app.route("/api/data")
 @api_login_required
@@ -405,7 +434,6 @@ def fetch_recurring_list(c, u):
              "active":bool(r["active"])} for r in rows]
 
 def fetch_recurring_status(c, u, date_str):
-    wk  = week_key(date_str)
     dow = js_dow(date_str)
     rows = c.execute(
         "SELECT id,name,type_name,days FROM recurring_tasks WHERE user_id=? AND active=1", (u,)
@@ -415,14 +443,15 @@ def fetch_recurring_status(c, u, date_str):
         day_list = [int(x) for x in r["days"].split(",") if x]
         if dow not in day_list:
             continue
+        # Cek status untuk tanggal spesifik ini
         skip = c.execute(
-            "SELECT done FROM recurring_skips WHERE recurring_id=? AND week_key=?",
-            (r["id"], wk)
+            "SELECT done FROM recurring_skips WHERE recurring_id=? AND date_key=?",
+            (r["id"], date_str)
         ).fetchone()
-        status = "done" if (skip and skip["done"]==1) else \
+        status = "done"    if (skip and skip["done"]==1) else \
                  "skipped" if (skip and skip["done"]==0) else "pending"
         result.append({"id":r["id"],"name":r["name"],"type":r["type_name"],
-                        "week_key":wk,"status":status})
+                        "date_key":date_str,"status":status})
     return result
 
 @app.route("/api/recurring")
@@ -475,32 +504,32 @@ def recurring_status():
 @app.route("/api/recurring/<int:rid>/done", methods=["POST"])
 @api_login_required
 def mark_recurring_done(rid):
-    u = uid(); b = request.json; wk = b.get("week_key",""); date = b.get("date","")
-    if not wk: return jsonify({"error":"week_key required"}), 400
+    u = uid(); b = request.json; date = b.get("date","")
+    if not date: return jsonify({"error":"date required"}), 400
     with get_db() as c:
-        c.execute("""INSERT INTO recurring_skips (user_id,recurring_id,week_key,done) VALUES (?,?,?,1)
-                     ON CONFLICT(recurring_id,week_key) DO UPDATE SET done=1""", (u,rid,wk))
+        c.execute("""INSERT INTO recurring_skips (user_id,recurring_id,date_key,done) VALUES (?,?,?,1)
+                     ON CONFLICT(recurring_id,date_key) DO UPDATE SET done=1""", (u,rid,date))
         c.commit()
-        return jsonify(fetch_recurring_status(c, u, date or datetime.now().strftime("%Y-%m-%d")))
+        return jsonify(fetch_recurring_status(c, u, date))
 
 @app.route("/api/recurring/<int:rid>/skip", methods=["POST"])
 @api_login_required
 def skip_recurring(rid):
-    u = uid(); b = request.json; wk = b.get("week_key",""); date = b.get("date","")
-    if not wk: return jsonify({"error":"week_key required"}), 400
+    u = uid(); b = request.json; date = b.get("date","")
+    if not date: return jsonify({"error":"date required"}), 400
     with get_db() as c:
-        c.execute("""INSERT INTO recurring_skips (user_id,recurring_id,week_key,done) VALUES (?,?,?,0)
-                     ON CONFLICT(recurring_id,week_key) DO UPDATE SET done=0""", (u,rid,wk))
+        c.execute("""INSERT INTO recurring_skips (user_id,recurring_id,date_key,done) VALUES (?,?,?,0)
+                     ON CONFLICT(recurring_id,date_key) DO UPDATE SET done=0""", (u,rid,date))
         c.commit()
-        return jsonify(fetch_recurring_status(c, u, date or datetime.now().strftime("%Y-%m-%d")))
+        return jsonify(fetch_recurring_status(c, u, date))
 
 @app.route("/api/recurring/<int:rid>/undone", methods=["POST"])
 @api_login_required
 def undone_recurring(rid):
-    u = uid(); b = request.json; wk = b.get("week_key",""); date = b.get("date","")
+    u = uid(); b = request.json; date = b.get("date","")
     with get_db() as c:
-        c.execute("DELETE FROM recurring_skips WHERE recurring_id=? AND week_key=? AND user_id=?",
-                  (rid,wk,u)); c.commit()
+        c.execute("DELETE FROM recurring_skips WHERE recurring_id=? AND (date_key=? OR week_key=?) AND user_id=?",
+                  (rid, date, date, u)); c.commit()
         return jsonify(fetch_recurring_status(c, u, date or datetime.now().strftime("%Y-%m-%d")))
 
 # ── API: GANTI PASSWORD ───────────────────────────────────────────────────────

@@ -1446,7 +1446,7 @@ document.addEventListener("keydown", e => {
 
 // ── RECURRING TASKS ──────────────────────────────────────────────────────────
 
-const DAY_NAMES = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 let recurringData  = [];
 let recurringToday = [];
 let selectedRecurDays = new Set();
@@ -1489,18 +1489,19 @@ function renderRecurringToday() {
     const itemCls = isDone ? "done-item" : isSkip ? "skip-item" : "";
     const chkCls  = isDone ? "done" : "";
     const nameCls = isDone ? "done" : isSkip ? "skip" : "";
+    const dateKey = r.date_key || selectedDate || todayStr;
     return `<li class="recurring-item ${itemCls}">
       <div class="recurring-item-top">
         <div class="recurring-check ${chkCls}"
-             onclick="toggleRecurringDone(${r.id},'${r.week_key}')"
+             onclick="toggleRecurringDone(${r.id},'${dateKey}')"
              title="${isDone?'Tandai belum selesai':'Tandai selesai'}"></div>
         <span class="type-dot" style="background:${color};width:8px;height:8px;border-radius:50%;flex-shrink:0;"></span>
         <span class="recurring-name ${nameCls}">${r.name}</span>
         <div class="recurring-actions">
           <button class="btn-skip ${isSkip?'active':''}"
-                  onclick="toggleSkipRecurring(${r.id},'${r.week_key}')"
-                  title="${isSkip?'Batalkan skip':'Skip minggu ini'}">
-            ${isSkip ? '↩ Batal skip' : 'Skip minggu ini'}
+                  onclick="toggleSkipRecurring(${r.id},'${dateKey}')"
+                  title="${isSkip?'Batalkan skip':'Skip hari ini'}">
+            ${isSkip ? '↩ Batal skip' : 'Skip hari ini'}
           </button>
         </div>
       </div>
@@ -1521,7 +1522,7 @@ async function addRecurring() {
     body: JSON.stringify({name:type, type, days})
   });
   recurringData  = await r.json();
-  recurringToday = await fetch(`/api/recurring/status?date=${todayStr}`).then(r=>r.json());
+  recurringToday = await fetch(`/api/recurring/status?date=${selectedDate||todayStr}`).then(r=>r.json());
   selectedRecurDays.clear();
   document.querySelectorAll(".day-btn").forEach(b=>b.classList.remove("selected"));
   document.getElementById("rec-type-select").value = "";
@@ -1533,32 +1534,32 @@ async function addRecurring() {
 
 async function deleteRecurring(rid) {
   recurringData  = await fetch(`/api/recurring/${rid}`, {method:"DELETE"}).then(r=>r.json());
-  recurringToday = await fetch(`/api/recurring/status?date=${todayStr}`).then(r=>r.json());
+  recurringToday = await fetch(`/api/recurring/status?date=${selectedDate||todayStr}`).then(r=>r.json());
   renderRecurringToday(); renderRecurringAll(); renderModalRecList(); renderCalendar();
 }
 
 async function toggleActiveRecurring(rid) {
   recurringData  = await fetch(`/api/recurring/${rid}/toggle_active`, {method:"POST"}).then(r=>r.json());
-  recurringToday = await fetch(`/api/recurring/status?date=${todayStr}`).then(r=>r.json());
+  recurringToday = await fetch(`/api/recurring/status?date=${selectedDate||todayStr}`).then(r=>r.json());
   renderRecurringToday(); renderRecurringAll(); renderModalRecList(); renderCalendar();
 }
 
-async function toggleRecurringDone(rid, wk) {
+async function toggleRecurringDone(rid, dateKey) {
   const item = recurringToday.find(r=>r.id===rid);
   const ep   = (item && item.status==="done") ? "undone" : "done";
   recurringToday = await fetch(`/api/recurring/${rid}/${ep}`, {
     method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({week_key:wk, date:todayStr})
+    body: JSON.stringify({date: dateKey})
   }).then(r=>r.json());
   renderRecurringToday();
 }
 
-async function toggleSkipRecurring(rid, wk) {
+async function toggleSkipRecurring(rid, dateKey) {
   const item = recurringToday.find(r=>r.id===rid);
   const ep   = (item && item.status==="skipped") ? "undone" : "skip";
   recurringToday = await fetch(`/api/recurring/${rid}/${ep}`, {
     method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({week_key:wk, date:todayStr})
+    body: JSON.stringify({date: dateKey})
   }).then(r=>r.json());
   renderRecurringToday();
 }
