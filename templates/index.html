@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Kelompok</title>
+<title>SYNCRA</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -596,7 +596,7 @@
 
 <div class="header">
   <button class="hamburger" onclick="openSidebar()" style="background:none;border:none;color:white;font-size:22px;cursor:pointer;opacity:0.85;padding:0;line-height:1;" title="Menu">☰</button>
-  <h1>Dashboard Kelompok</h1>
+  <h1>SYNCRA</h1>
   <div class="header-right">
     <div class="user-chip">
       <span class="user-avatar">{{ full_name[0] | upper }}</span>
@@ -1418,6 +1418,52 @@ function renderModalRecList() {
       <div class="days-row">${dayChips}</div>
     </li>`;
   }).join('');
+}
+
+
+// ── GANTI PASSWORD ────────────────────────────────────────────────────────────
+
+function openPwModal() {
+  document.getElementById("old-pw-input").value  = "";
+  document.getElementById("new-pw-input").value  = "";
+  document.getElementById("pw-modal-error").style.display = "none";
+  document.getElementById("pw-modal-ok").style.display    = "none";
+  document.getElementById("pw-modal").classList.add("open");
+}
+
+function closePwModal() {
+  document.getElementById("pw-modal").classList.remove("open");
+}
+
+async function savePassword() {
+  const old_password = document.getElementById("old-pw-input").value;
+  const new_password = document.getElementById("new-pw-input").value;
+  const errEl = document.getElementById("pw-modal-error");
+  const okEl  = document.getElementById("pw-modal-ok");
+  errEl.style.display = "none";
+  okEl.style.display  = "none";
+
+  if (!old_password || !new_password) {
+    errEl.textContent = "Semua field wajib diisi.";
+    errEl.style.display = "block"; return;
+  }
+  if (new_password.length < 6) {
+    errEl.textContent = "Password baru minimal 6 karakter.";
+    errEl.style.display = "block"; return;
+  }
+
+  const r    = await fetch("/api/change_password", {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({old_password, new_password})
+  });
+  const data = await r.json();
+  if (data.error) {
+    errEl.textContent   = data.error;
+    errEl.style.display = "block";
+  } else {
+    okEl.style.display = "block";
+    setTimeout(closePwModal, 1500);
+  }
 }
 
 // ── SIDEBAR ──────────────────────────────────────────────────────────────────
