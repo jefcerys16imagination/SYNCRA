@@ -52,7 +52,7 @@ The database (`dashboard.db`) is created automatically on first run.
 
 ### Interactive Calendar
 - Monthly calendar with navigation
-- **Colored dots** per task — one dot per task, color matches task type
+- **Colored dots** per task  one dot per task, color matches task type
 - **Hollow ring dots** for recurring/weekly schedule tasks
 - **Gold border outline** on dates that have recorded expenses
 - Click any date to view and manage that day's data
@@ -84,8 +84,8 @@ Accessible via the Pengaturan Tugas** button, with two tabs:
 - Expense list is reactive to the selected calendar date
 
 **Budget modes:**
-- **Per Month** — budget and stats apply to the current calendar month
-- **Per Week** — budget and stats apply to the current week (Mon–Sun)
+- **Per Month**  budget and stats apply to the current calendar month
+- **Per Week**  budget and stats apply to the current week (Mon–Sun)
 
 **Finance panel shows:**
 - Donut chart with percentage of budget used
@@ -99,15 +99,15 @@ Accessible via the Pengaturan Tugas** button, with two tabs:
 
 | Table | Description |
 |-------|-------------|
-| `users` | User accounts — id, username, password hash, full_name, role |
-| `task_types` | Custom task categories per user — name, color |
+| `users` | User accounts  id, username, password hash, full_name, role |
+| `task_types` | Custom task categories per user  name, color |
 | `tasks` | Individual tasks per user per date |
-| `expenses` | Expense records per user per date — amount, description |
+| `expenses` | Expense records per user per date  amount, description |
 | `budgets` | Budget amount and mode (monthly/weekly) per user |
-| `recurring_tasks` | Weekly schedule definitions — task type + active days |
+| `recurring_tasks` | Weekly schedule definitions  task type + active days |
 | `recurring_skips` | Per-day check/skip status for recurring tasks |
 
-All tables use `ON DELETE CASCADE` — deleting a user removes all their data.
+All tables use `ON DELETE CASCADE`  deleting a user removes all their data.
 
 ---
 
@@ -121,7 +121,7 @@ All tables use `ON DELETE CASCADE` — deleting a user removes all their data.
 
 ```
 dashboard-kelompok/
-├── app.py                  # Flask backend — routes, DB logic, auth
+├── app.py                  # Flask backend  routes, DB logic, auth
 ├── dashboard.db            # SQLite database (auto-generated on first run)
 ├── requirements.txt        # Python dependencies
 ├── fix_db.py               # One-time DB migration script (if needed)
@@ -137,10 +137,10 @@ dashboard-kelompok/
 
 ## Notes
 
-- All user data is **fully isolated** — each user only sees their own tasks, schedules, and finances
+- All user data is **fully isolated**  each user only sees their own tasks, schedules, and finances
 - `SECRET_KEY` is randomly generated on each restart unless set via environment variable. For production:
   ```bash
   export SECRET_KEY="your-long-random-string-here"
   ```
-- Weekly recurring task status is tracked **per day** — checking Monday does not affect Tuesday or Wednesday of the same week
+- Weekly recurring task status is tracked **per day**  checking Monday does not affect Tuesday or Wednesday of the same week
 - The `dashboard.db` file should be added to `.gitignore` to avoid committing user data
