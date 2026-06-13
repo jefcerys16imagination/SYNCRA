@@ -48,9 +48,10 @@ The database (`dashboard.db`) is created automatically on first run.
 - User **registration** and **login** with validation
 - Passwords hashed with SHA-256
 - Session-based login (persists 7 days)
+- Chang / Update Password
 
 ### Interactive Calendar
-- Monthly calendar with navigation (← →)
+- Monthly calendar with navigation
 - **Colored dots** per task — one dot per task, color matches task type
 - **Hollow ring dots** for recurring/weekly schedule tasks
 - **Gold border outline** on dates that have recorded expenses
