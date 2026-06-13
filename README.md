@@ -48,7 +48,7 @@ The database (`dashboard.db`) is created automatically on first run.
 - User **registration** and **login** with validation
 - Passwords hashed with SHA-256
 - Session-based login (persists 7 days)
-- Chang / Update Password
+- Change / Update Password
 
 ### Interactive Calendar
 - Monthly calendar with navigation
@@ -64,8 +64,8 @@ The database (`dashboard.db`) is created automatically on first run.
 - "All done! " celebration banner when all tasks are checked
 - Check/uncheck and delete tasks per day
 
-### Task Settings Modal
-Accessible via the **⚙ Pengaturan Tugas** button, with two tabs:
+### Task Settings (Modal)
+Accessible via the Pengaturan Tugas** button, with two tabs:
 
 **Task Types**
 - Create custom task types with a name and color (green, orange, blue, purple, teal)
@@ -75,7 +75,7 @@ Accessible via the **⚙ Pengaturan Tugas** button, with two tabs:
 - Create recurring tasks tied to a task type
 - Select specific days: Sun Mon Tue Wed Thu Fri Sat
 - Each day tracks its own **independent** check/skip status
-- Pause (⏸) or reactivate (▶) schedules without deleting
+- Pause or reactivate schedules without deleting
 - Delete schedules permanently
 
 ### Finance Management
@@ -95,7 +95,7 @@ Accessible via the **⚙ Pengaturan Tugas** button, with two tabs:
 
 ---
 
-## 🗄 Database Schema
+## Database Schema
 
 | Table | Description |
 |-------|-------------|
@@ -111,7 +111,7 @@ All tables use `ON DELETE CASCADE` — deleting a user removes all their data.
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ![Skills](https://skillicons.dev/icons?i=py,flask,sqlite,html,css,js,git,github,vscode)
 
